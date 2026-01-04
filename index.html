@@ -46,7 +46,7 @@
             background: rgba(255, 255, 255, 0.3);
             border-radius: 10px;
             height: 30px;
-            overflow: hidden;
+            position: relative;
             margin-bottom: 10px;
         }
 
@@ -54,12 +54,25 @@
             background: linear-gradient(90deg, #4CAF50, #81C784);
             height: 100%;
             transition: width 0.3s ease;
+            border-radius: 10px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
             font-size: 14px;
+            z-index: 1;
         }
 
         .stats {
@@ -426,7 +439,8 @@
 
         <div class="progress-container">
             <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%;">0%</div>
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                <div class="progress-text" id="progressText">0%</div>
             </div>
             <div class="stats">
                 <div class="stat">
@@ -757,7 +771,7 @@
             const completed = appState.completed.length;
             const percentage = Math.round((completed / total) * 100);
             document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressFill').textContent = percentage + '%';
+            document.getElementById('progressText').textContent = percentage + '%';
             document.getElementById('completedCount').textContent = completed;
             document.getElementById('favoritesCount').textContent = appState.favorited.length;
             document.getElementById('likedCount').textContent = appState.liked.length;
