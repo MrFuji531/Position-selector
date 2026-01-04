@@ -131,6 +131,959 @@
             color: #C62828;
         }
 
+        .position-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            background: #f8f8f8;
+        }
+
+        .position-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .tags-container {
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin: 3px;
+            color: #666;
+        }
+
+        .tag.toy {
+            background: #E1BEE7;
+            color: #6A1B9A;
+        }
+
+        .tag.bondage {
+            background: #FFCCBC;
+            color: #D84315;
+        }
+
+        .equipment-list {
+            background: #FFF3E0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .equipment-list h4 {
+            color: #E65100;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .equipment-list ul {
+            list-style: none;
+        }
+
+        .equipment-list li {
+            color: #666;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+
+        .equipment-list li:before {
+            content: "• ";
+            color: #E65100;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #FF9800;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #9E9E9E;
+            color: white;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-small {
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .nav {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .equipment-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .equipment-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .equipment-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .top-actions button {
+            flex: 1;
+        }
+
+        .rating-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .rating-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .rating-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .rating-btn.selected {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .position-list-item {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .position-list-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .position-list-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .position-list-tags {
+            margin-top: 8px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .position-name {
+                font-size: 20px;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Position Explorer</h1>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value" id="completedCount">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="favoritesCount">0</span>
+                    <span class="stat-label">❤️ Favorites</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="likedCount">0</span>
+                    <span class="stat-label">👍 Liked</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="remainingCount">319</span>
+                    <span class="stat-label">Remaining</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-actions">
+            <button class="btn btn-secondary btn-small" onclick="undoLastAction()">↩️ Undo</button>
+            <button class="btn btn-danger btn-small" onclick="confirmReset()">🔄 Reset All</button>
+        </div>
+
+        <div class="nav">
+            <button class="nav-btn active" onclick="switchTab('positions')">Positions</button>
+            <button class="nav-btn" onclick="switchTab('equipment')">Equipment</button>
+            <button class="nav-btn" onclick="switchTab('stats')">Stats</button>
+        </div>
+
+        <!-- Positions Tab -->
+        <div id="positionsTab" class="tab-content active">
+            <div id="suggestView">
+                <div class="card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <h3>Ready to explore?</h3>
+                        <p>Tap below to get a random position</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="suggestPosition()">✨ Suggest Position</button>
+            </div>
+
+            <div id="positionView" class="hidden">
+                <div class="card position-card">
+                    <h2 class="position-name" id="positionName"></h2>
+                    <span class="position-difficulty" id="positionDifficulty"></span>
+                    <div class="tags-container" id="tagsContainer"></div>
+                    <img id="positionImage" class="position-image hidden" alt="Position illustration">
+                    <div id="equipmentNeeded" class="hidden equipment-list">
+                        <h4>Equipment Needed:</h4>
+                        <ul id="equipmentList"></ul>
+                    </div>
+                    <p class="position-description" id="positionDescription"></p>
+                </div>
+
+                <button class="btn btn-success" onclick="showRatingOptions()">✅ Complete</button>
+                
+                <div id="ratingOptions" class="hidden">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; text-align: center;">How was it?</h3>
+                        <div class="rating-buttons">
+                            <button class="rating-btn" onclick="selectRating('dislike')" id="dislikeBtn">👎</button>
+                            <button class="rating-btn" onclick="selectRating('like')" id="likeBtn">👍</button>
+                            <button class="rating-btn" onclick="selectRating('favorite')" id="favoriteBtn">❤️</button>
+                        </div>
+                        <button class="btn btn-primary" onclick="completePosition()" style="margin-top: 15px;">Save Rating</button>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-warning btn-small" onclick="dontHaveEquipment()">🚫 No Equipment</button>
+                    <button class="btn btn-danger btn-small" onclick="dontWantToDo()">❌ Don't Want</button>
+                    <button class="btn btn-secondary btn-small" onclick="skipPosition()">⏭️ Skip</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Tab -->
+        <div id="equipmentTab" class="tab-content">
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">Missing Equipment</h3>
+                <div id="equipmentListContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <h3>All set!</h3>
+                        <p>No missing equipment yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="statsTab" class="tab-content">
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 20px;">📊 Your Statistics</h3>
+                <div class="stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="stat" style="background: #E8F5E9; padding: 15px; border-radius: 10px;">
+                        <span class="stat-value" style="color: #2E7D32;" id="statsLikedCount">0</span>
+                        <span class="stat-label" style="color: #2E7D32;">👍 Liked</span>
+                    </div>
+                    <div class="stat" style="background: #FFEBEE; padding: 15px; border-radius: 10px;">
+                        <span class="stat-value" style="color: #C62828;" id="statsDislikedCount">0</span>
+                        <span class="stat-label" style="color: #C62828;">👎 Disliked</span>
+                    </div>
+                    <div class="stat" style="background: #FCE4EC; padding: 15px; border-radius: 10px;">
+                        <span class="stat-value" style="color: #880E4F;" id="statsFavoritedCount">0</span>
+                        <span class="stat-label" style="color: #880E4F;">❤️ Favorites</span>
+                    </div>
+                    <div class="stat" style="background: #F3E5F5; padding: 15px; border-radius: 10px;">
+                        <span class="stat-value" style="color: #4A148C;" id="statsRemovedCount">0</span>
+                        <span class="stat-label" style="color: #4A148C;">❌ Removed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Favorites -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px; color: #880E4F;">❤️ Favorite Positions</h3>
+                <div id="favoritesList"></div>
+            </div>
+
+            <!-- Liked -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px; color: #2E7D32;">👍 Liked Positions</h3>
+                <div id="likedList"></div>
+            </div>
+
+            <!-- Disliked -->
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: #C62828;">👎 Disliked Positions</h3>
+                <div id="dislikedList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Position data will be loaded here
+        let positions = [];
+        let appState = {
+            completed: [],
+            liked: [],
+            disliked: [],
+            favorited: [],
+            removed: [],
+            missingEquipment: {},
+            currentPosition: null,
+            selectedRating: null,
+            history: []
+        };
+
+        // Load positions data
+        async function loadPositions() {
+            try {
+                const response = await fetch('sex_positions_comprehensive.json');
+                const data = await response.json();
+                positions = data.positions;
+                loadState();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading positions:', error);
+                alert('Error loading data. Please make sure sex_positions_comprehensive.json is in the same folder.');
+            }
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('positionExplorerState', JSON.stringify(appState));
+        }
+
+        // Load state from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('positionExplorerState');
+            if (saved) {
+                appState = JSON.parse(saved);
+            }
+        }
+
+        // Get available positions (not completed, not removed, have equipment)
+        function getAvailablePositions() {
+            return positions.filter(pos => {
+                // Already completed or removed
+                if (appState.completed.includes(pos.id) || appState.removed.includes(pos.id)) {
+                    return false;
+                }
+
+                // Check if we have all required equipment
+                if (pos.toy || pos.bondage) {
+                    const required = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
+                    for (let equipment of required) {
+                        if (appState.missingEquipment[equipment]) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            });
+        }
+
+        // Suggest random position
+        function suggestPosition() {
+            const available = getAvailablePositions();
+            
+            if (available.length === 0) {
+                alert('No more positions available! Check your missing equipment or reset to start over.');
+                return;
+            }
+
+            const randomPos = available[Math.floor(Math.random() * available.length)];
+            appState.currentPosition = randomPos;
+            appState.selectedRating = null;
+            displayPosition(randomPos);
+        }
+
+        // Display position
+        function displayPosition(pos) {
+            document.getElementById('suggestView').classList.add('hidden');
+            document.getElementById('positionView').classList.remove('hidden');
+            document.getElementById('ratingOptions').classList.add('hidden');
+
+            document.getElementById('positionName').textContent = pos.name;
+            document.getElementById('positionDescription').textContent = pos.description;
+            
+            const difficultyEl = document.getElementById('positionDifficulty');
+            difficultyEl.textContent = pos.difficulty;
+            difficultyEl.className = 'position-difficulty difficulty-' + pos.difficulty;
+
+            // Handle image
+            const imageEl = document.getElementById('positionImage');
+            if (pos.image_file) {
+                imageEl.src = pos.image_file;
+                imageEl.classList.remove('hidden');
+                imageEl.onerror = function() {
+                    // Hide image if it fails to load
+                    this.classList.add('hidden');
+                };
+            } else {
+                imageEl.classList.add('hidden');
+            }
+
+            // Tags
+            const tagsContainer = document.getElementById('tagsContainer');
+            tagsContainer.innerHTML = '';
+            
+            if (pos.toy) {
+                tagsContainer.innerHTML += '<span class="tag toy">🎀 Toy</span>';
+            }
+            if (pos.bondage) {
+                tagsContainer.innerHTML += '<span class="tag bondage">🔗 Bondage</span>';
+            }
+
+            // Equipment needed
+            const equipmentNeeded = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
+            if (equipmentNeeded.length > 0) {
+                document.getElementById('equipmentNeeded').classList.remove('hidden');
+                const equipmentList = document.getElementById('equipmentList');
+                equipmentList.innerHTML = equipmentNeeded.map(item => `<li>${item}</li>`).join('');
+            } else {
+                document.getElementById('equipmentNeeded').classList.add('hidden');
+            }
+
+            // Reset rating buttons
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+        }
+
+        // Show rating options
+        function showRatingOptions() {
+            document.getElementById('ratingOptions').classList.remove('hidden');
+        }
+
+        // Select rating
+        function selectRating(rating) {
+            appState.selectedRating = rating;
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById(rating + 'Btn').classList.add('selected');
+        }
+
+        // Complete position
+        function completePosition() {
+            if (!appState.selectedRating) {
+                alert('Please select a rating first!');
+                return;
+            }
+
+            const pos = appState.currentPosition;
+            
+            // Save to history for undo
+            appState.history.push({
+                action: 'complete',
+                positionId: pos.id,
+                rating: appState.selectedRating
+            });
+
+            // Mark as completed
+            appState.completed.push(pos.id);
+
+            // Save rating
+            if (appState.selectedRating === 'like') {
+                appState.liked.push(pos.id);
+            } else if (appState.selectedRating === 'dislike') {
+                appState.disliked.push(pos.id);
+            } else if (appState.selectedRating === 'favorite') {
+                appState.favorited.push(pos.id);
+            }
+
+            saveState();
+            updateStats();
+            resetView();
+        }
+
+        // Don't have equipment
+        function dontHaveEquipment() {
+            const pos = appState.currentPosition;
+            const equipment = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
+
+            if (equipment.length === 0) {
+                alert('This position doesn\'t require any equipment!');
+                return;
+            }
+
+            // Save to history
+            appState.history.push({
+                action: 'missingEquipment',
+                equipment: equipment
+            });
+
+            // Add to missing equipment
+            equipment.forEach(item => {
+                if (!appState.missingEquipment[item]) {
+                    appState.missingEquipment[item] = 0;
+                }
+                appState.missingEquipment[item]++;
+            });
+
+            saveState();
+            updateEquipmentList();
+            resetView();
+            
+            // Auto suggest next
+            setTimeout(() => suggestPosition(), 300);
+        }
+
+        // Don't want to do
+        function dontWantToDo() {
+            if (!confirm('Are you sure you want to permanently remove this position?')) {
+                return;
+            }
+
+            const pos = appState.currentPosition;
+            
+            // Save to history
+            appState.history.push({
+                action: 'remove',
+                positionId: pos.id
+            });
+
+            appState.removed.push(pos.id);
+            saveState();
+            updateStats();
+            resetView();
+        }
+
+        // Skip position
+        function skipPosition() {
+            resetView();
+        }
+
+        // Reset view to suggest button
+        function resetView() {
+            document.getElementById('suggestView').classList.remove('hidden');
+            document.getElementById('positionView').classList.add('hidden');
+            appState.currentPosition = null;
+            appState.selectedRating = null;
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = positions.length;
+            const completed = appState.completed.length;
+            const percentage = Math.round((completed / total) * 100);
+
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressFill').textContent = percentage + '%';
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('favoritesCount').textContent = appState.favorited.length;
+            document.getElementById('likedCount').textContent = appState.liked.length;
+            document.getElementById('remainingCount').textContent = total - completed - appState.removed.length;
+        }
+
+        // Update equipment list
+        function updateEquipmentList() {
+            const container = document.getElementById('equipmentListContainer');
+            const equipment = Object.keys(appState.missingEquipment);
+
+            if (equipment.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <h3>All set!</h3>
+                        <p>No missing equipment yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = equipment.map(item => `
+                <div class="equipment-item">
+                    <span class="equipment-name">${item}</span>
+                    <div>
+                        <span class="equipment-count">${appState.missingEquipment[item]} positions</span>
+                        <button class="btn btn-success btn-small" style="margin-left: 10px; width: auto; padding: 8px 15px;" onclick="markEquipmentAsOwned('${item}')">Got it!</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Mark equipment as owned
+        function markEquipmentAsOwned(equipment) {
+            delete appState.missingEquipment[equipment];
+            saveState();
+            updateEquipmentList();
+            alert(`Great! Positions requiring "${equipment}" are now available.`);
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tab === 'positions') {
+                document.querySelector('.nav-btn:nth-child(1)').classList.add('active');
+                document.getElementById('positionsTab').classList.add('active');
+            } else if (tab === 'equipment') {
+                document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
+                document.getElementById('equipmentTab').classList.add('active');
+                updateEquipmentList();
+            } else if (tab === 'stats') {
+                document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
+                document.getElementById('statsTab').classList.add('active');
+                updateStatsTab();
+            }
+        }
+
+        // Update stats tab
+        function updateStatsTab() {
+            // Update counts
+            document.getElementById('statsLikedCount').textContent = appState.liked.length;
+            document.getElementById('statsDislikedCount').textContent = appState.disliked.length;
+            document.getElementById('statsFavoritedCount').textContent = appState.favorited.length;
+            document.getElementById('statsRemovedCount').textContent = appState.removed.length;
+
+            // Helper function to render position list
+            function renderPositionList(positionIds) {
+                if (positionIds.length === 0) {
+                    return `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p style="color: #999;">None yet</p>
+                        </div>
+                    `;
+                }
+
+                return positionIds.map(id => {
+                    const pos = positions.find(p => p.id === id);
+                    if (!pos) return '';
+                    
+                    let tags = '';
+                    if (pos.toy) tags += '<span class="tag toy">🎀 Toy</span>';
+                    if (pos.bondage) tags += '<span class="tag bondage">🔗 Bondage</span>';
+                    tags += `<span class="tag difficulty-${pos.difficulty}">${pos.difficulty}</span>`;
+
+                    return `
+                        <div class="position-list-item">
+                            <div class="position-list-name">${pos.name}</div>
+                            <div class="position-list-description">${pos.description}</div>
+                            <div class="position-list-tags">${tags}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Update lists
+            document.getElementById('favoritesList').innerHTML = renderPositionList(appState.favorited);
+            document.getElementById('likedList').innerHTML = renderPositionList(appState.liked);
+            document.getElementById('dislikedList').innerHTML = renderPositionList(appState.disliked);
+        }
+
+        // Undo last action
+        function undoLastAction() {
+            if (appState.history.length === 0) {
+                alert('Nothing to undo!');
+                return;
+            }
+
+            const lastAction = appState.history.pop();
+
+            if (lastAction.action === 'complete') {
+                // Remove from completed
+                appState.completed = appState.completed.filter(id => id !== lastAction.positionId);
+                
+                // Remove from rating lists
+                appState.liked = appState.liked.filter(id => id !== lastAction.positionId);
+                appState.disliked = appState.disliked.filter(id => id !== lastAction.positionId);
+                appState.favorited = appState.favorited.filter(id => id !== lastAction.positionId);
+            } else if (lastAction.action === 'remove') {
+                appState.removed = appState.removed.filter(id => id !== lastAction.positionId);
+            } else if (lastAction.action === 'missingEquipment') {
+                lastAction.equipment.forEach(item => {
+                    if (appState.missingEquipment[item]) {
+                        appState.missingEquipment[item]--;
+                        if (appState.missingEquipment[item] <= 0) {
+                            delete appState.missingEquipment[item];
+                        }
+                    }
+                });
+            }
+
+            saveState();
+            updateStats();
+            updateEquipmentList();
+            alert('Last action undone!');
+        }
+
+        // Confirm reset
+        function confirmReset() {
+            if (confirm('Are you sure you want to reset ALL data? This cannot be undone!')) {
+                if (confirm('Really sure? All your progress will be lost!')) {
+                    resetAll();
+                }
+            }
+        }
+
+        // Reset all data
+        function resetAll() {
+            appState = {
+                completed: [],
+                liked: [],
+                disliked: [],
+                favorited: [],
+                removed: [],
+                missingEquipment: {},
+                currentPosition: null,
+                selectedRating: null,
+                history: []
+            };
+            saveState();
+            updateStats();
+            updateEquipmentList();
+            resetView();
+            alert('All data has been reset!');
+        }
+
+        // Initialize app
+        loadPositions();
+    </script>
+</body>
+</html>
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .position-card {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .position-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .position-difficulty {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .difficulty-beginner {
+            background: #C8E6C9;
+            color: #2E7D32;
+        }
+
+        .difficulty-intermediate {
+            background: #FFF9C4;
+            color: #F57F17;
+        }
+
+        .difficulty-advanced {
+            background: #FFCDD2;
+            color: #C62828;
+        }
+
         .position-description {
             color: #666;
             line-height: 1.6;
