@@ -464,6 +464,7 @@
 
         <div class="top-actions">
             <button class="btn btn-secondary btn-small" onclick="undoLastAction()">↩️ Undo</button>
+            <button class="btn btn-secondary btn-small" onclick="manualSync()" id="syncBtn">🔄 Sync Now</button>
             <button class="btn btn-danger btn-small" onclick="confirmReset()">🔄 Reset All</button>
         </div>
 
@@ -578,6 +579,138 @@
     </div>
 
     <script>
+        // ==========================================
+        // SUPABASE CONFIGURATION
+        // ==========================================
+        // TODO: Replace these with your Supabase credentials
+        const SUPABASE_URL = 'https://dgbbloirhopjkpnckrdp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmJsb2lyaG9wamtwbmNrcmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTcwMzYsImV4cCI6MjA4MzM3MzAzNn0.iVWe7_wVqvQjCIG70Jr9qka_Gn1WeFlRxsIjIvd0Ayg';
+
+        // Supabase client setup
+        let supabaseClient = null;
+        let userCode = null;
+        let syncEnabled = false;
+
+        function initSupabase() {
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
+                console.log('Supabase not configured - using localStorage only');
+                return;
+            }
+            
+            // Simple fetch-based Supabase client
+            supabaseClient = {
+                url: SUPABASE_URL,
+                key: SUPABASE_ANON_KEY,
+                
+                async query(sql, params = []) {
+                    const response = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': this.key,
+                            'Authorization': `Bearer ${this.key}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: sql, params })
+                    });
+                    return response.json();
+                },
+                
+                async getData(code) {
+                    const response = await fetch(`${this.url}/rest/v1/position_data?code=eq.${code}`, {
+                        method: 'GET',
+                        headers: {
+                            'apikey': this.key,
+                            'Authorization': `Bearer ${this.key}`,
+                        }
+                    });
+                    const data = await response.json();
+                    return data.length > 0 ? data[0] : null;
+                },
+                
+                async upsertData(code, stateData) {
+                    const response = await fetch(`${this.url}/rest/v1/position_data`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': this.key,
+                            'Authorization': `Bearer ${this.key}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'resolution=merge-duplicates'
+                        },
+                        body: JSON.stringify({
+                            code: code,
+                            data: stateData,
+                            updated_at: new Date().toISOString()
+                        })
+                    });
+                    return response.ok;
+                }
+            };
+            
+            syncEnabled = true;
+        }
+
+        // ==========================================
+        // SYNC FUNCTIONS
+        // ==========================================
+        
+        async function promptForCode() {
+            const savedCode = localStorage.getItem('userCode');
+            if (savedCode) {
+                userCode = savedCode;
+                return true;
+            }
+            
+            const code = prompt('Enter your shared code to sync data across devices:');
+            if (code && code.trim()) {
+                userCode = code.trim();
+                localStorage.setItem('userCode', userCode);
+                return true;
+            }
+            return false;
+        }
+
+        async function syncToCloud() {
+            if (!syncEnabled || !userCode || !supabaseClient) return;
+            
+            try {
+                await supabaseClient.upsertData(userCode, appState);
+                console.log('Synced to cloud successfully');
+            } catch (error) {
+                console.error('Sync error:', error);
+            }
+        }
+
+        async function syncFromCloud() {
+            if (!syncEnabled || !userCode || !supabaseClient) return;
+            
+            try {
+                const cloudData = await supabaseClient.getData(userCode);
+                if (cloudData && cloudData.data) {
+                    // Merge cloud data with local data (cloud takes precedence)
+                    appState = { ...appState, ...cloudData.data };
+                    saveState(); // Save merged data to localStorage
+                    updateStats();
+                    console.log('Synced from cloud successfully');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Sync from cloud error:', error);
+            }
+            return false;
+        }
+
+        async function uploadLocalData() {
+            if (!syncEnabled || !userCode) return;
+            
+            // Upload current localStorage data to cloud
+            await syncToCloud();
+            alert('Your progress has been uploaded to the cloud!');
+        }
+
+        // ==========================================
+        // EXISTING CODE
+        // ==========================================
+        
         let positions = [];
         let appState = {
             completed: [],
@@ -596,7 +729,25 @@
                 const response = await fetch('sex_positions_comprehensive.json');
                 const data = await response.json();
                 positions = data.positions;
+                
+                // Initialize Supabase
+                initSupabase();
+                
+                // Load local state first
                 loadState();
+                
+                // If sync is enabled, try to sync from cloud
+                if (syncEnabled) {
+                    const hasCode = await promptForCode();
+                    if (hasCode) {
+                        const synced = await syncFromCloud();
+                        if (!synced) {
+                            // No cloud data found, upload local data
+                            await uploadLocalData();
+                        }
+                    }
+                }
+                
                 updateStats();
             } catch (error) {
                 console.error('Error loading positions:', error);
@@ -606,6 +757,10 @@
 
         function saveState() {
             localStorage.setItem('positionExplorerState', JSON.stringify(appState));
+            // Auto-sync to cloud after saving
+            if (syncEnabled) {
+                syncToCloud();
+            }
         }
 
         function loadState() {
@@ -912,6 +1067,38 @@
             updateEquipmentList();
             resetView();
             alert('All data has been reset!');
+        }
+
+        async function manualSync() {
+            if (!syncEnabled) {
+                alert('Cloud sync is not configured. Using local storage only.');
+                return;
+            }
+            
+            if (!userCode) {
+                const hasCode = await promptForCode();
+                if (!hasCode) return;
+            }
+            
+            try {
+                // Upload local data
+                await syncToCloud();
+                // Then pull any updates
+                await syncFromCloud();
+                alert('Sync completed successfully!');
+            } catch (error) {
+                alert('Sync failed. Please try again.');
+                console.error(error);
+            }
+        }
+
+        function changeCode() {
+            const newCode = prompt('Enter new shared code:', userCode || '');
+            if (newCode && newCode.trim()) {
+                userCode = newCode.trim();
+                localStorage.setItem('userCode', userCode);
+                syncFromCloud();
+            }
         }
 
         loadPositions();
