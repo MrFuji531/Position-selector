@@ -582,7 +582,6 @@
         // ==========================================
         // SUPABASE CONFIGURATION
         // ==========================================
-        // TODO: Replace these with your Supabase credentials
         const SUPABASE_URL = 'https://dgbbloirhopjkpnckrdp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmJsb2lyaG9wamtwbmNrcmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTcwMzYsImV4cCI6MjA4MzM3MzAzNn0.iVWe7_wVqvQjCIG70Jr9qka_Gn1WeFlRxsIjIvd0Ayg';
 
@@ -688,7 +687,7 @@
                 if (cloudData && cloudData.data) {
                     // Merge cloud data with local data (cloud takes precedence)
                     appState = { ...appState, ...cloudData.data };
-                    saveState(); // Save merged data to localStorage
+                    saveStateLocal(); // Save merged data to localStorage without triggering cloud sync
                     updateStats();
                     console.log('Synced from cloud successfully');
                     return true;
@@ -719,10 +718,9 @@
             favorited: [],
             removed: [],
             missingEquipment: {},
-            currentPosition: null,
+            currentPositionId: null,  // Store only the ID for persistence
             selectedRating: null,
-            history: [],
-            isPositionShown: false
+            history: []
         };
 
         async function loadPositions() {
@@ -749,25 +747,37 @@
                     }
                 }
                 
-                // If there's a current position stored AND it's shown AND it's still valid (not completed/removed)
-                if (appState.currentPosition && appState.isPositionShown) {
-                    const posId = appState.currentPosition.id;
-                    // Check if this position has been completed or removed
-                    if (!appState.completed.includes(posId) && !appState.removed.includes(posId)) {
-                        displayPosition(appState.currentPosition);
-                    } else {
-                        // Position was completed/removed, clear it
-                        appState.currentPosition = null;
-                        appState.isPositionShown = false;
-                        saveState();
-                    }
-                }
+                // Restore the current position if one was saved
+                restoreCurrentPosition();
                 
                 updateStats();
             } catch (error) {
                 console.error('Error loading positions:', error);
                 alert('Error loading data. Please make sure sex_positions_comprehensive.json is in the same folder.');
             }
+        }
+
+        // Restore the current position from saved state
+        function restoreCurrentPosition() {
+            if (appState.currentPositionId) {
+                // Find the position by ID
+                const pos = positions.find(p => p.id === appState.currentPositionId);
+                
+                // Check if this position is still valid (not completed or removed)
+                if (pos && !appState.completed.includes(pos.id) && !appState.removed.includes(pos.id)) {
+                    displayPosition(pos);
+                } else {
+                    // Position was completed/removed or not found, clear it
+                    appState.currentPositionId = null;
+                    appState.selectedRating = null;
+                    saveState();
+                }
+            }
+        }
+
+        // Save to localStorage only (without cloud sync)
+        function saveStateLocal() {
+            localStorage.setItem('positionExplorerState', JSON.stringify(appState));
         }
 
         function saveState() {
@@ -781,7 +791,21 @@
         function loadState() {
             const saved = localStorage.getItem('positionExplorerState');
             if (saved) {
-                appState = JSON.parse(saved);
+                const loadedState = JSON.parse(saved);
+                // Merge with default state to ensure all properties exist
+                appState = { ...appState, ...loadedState };
+                
+                // Migration: convert old currentPosition object to currentPositionId
+                if (loadedState.currentPosition && !loadedState.currentPositionId) {
+                    appState.currentPositionId = loadedState.currentPosition.id;
+                }
+                // Migration: convert old isPositionShown to currentPositionId presence
+                if (loadedState.isPositionShown === false) {
+                    appState.currentPositionId = null;
+                }
+                // Clean up old properties
+                delete appState.currentPosition;
+                delete appState.isPositionShown;
             }
         }
 
@@ -810,16 +834,18 @@
             }
             const randomPos = available[Math.floor(Math.random() * available.length)];
             
-            // Save previous state for undo
+            // Save action to history for undo
             appState.history.push({
                 action: 'suggest',
-                positionId: randomPos.id
+                positionId: randomPos.id,
+                previousPositionId: appState.currentPositionId // Store previous state for proper undo
             });
             
-            appState.currentPosition = randomPos;
+            // Save the position ID (persists across refreshes)
+            appState.currentPositionId = randomPos.id;
             appState.selectedRating = null;
-            appState.isPositionShown = true;
             saveState();
+            
             displayPosition(randomPos);
         }
 
@@ -877,22 +903,32 @@
                 alert('Please select a rating first!');
                 return;
             }
-            const pos = appState.currentPosition;
+            const posId = appState.currentPositionId;
+            
+            // Update history - remove the suggest action and replace with complete
+            // Find and remove the last suggest action for this position
+            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
+            if (lastSuggestIndex !== -1) {
+                appState.history.splice(lastSuggestIndex, 1);
+            }
+            
+            // Add complete action to history
             appState.history.push({
                 action: 'complete',
-                positionId: pos.id,
+                positionId: posId,
                 rating: appState.selectedRating
             });
-            appState.completed.push(pos.id);
+            
+            appState.completed.push(posId);
             if (appState.selectedRating === 'like') {
-                appState.liked.push(pos.id);
+                appState.liked.push(posId);
             } else if (appState.selectedRating === 'dislike') {
-                appState.disliked.push(pos.id);
+                appState.disliked.push(posId);
             } else if (appState.selectedRating === 'favorite') {
-                appState.favorited.push(pos.id);
+                appState.favorited.push(posId);
             }
-            appState.isPositionShown = false;
-            appState.currentPosition = null;
+            
+            appState.currentPositionId = null;
             appState.selectedRating = null;
             saveState();
             updateStats();
@@ -900,24 +936,35 @@
         }
 
         function dontHaveEquipment() {
-            const pos = appState.currentPosition;
+            const pos = positions.find(p => p.id === appState.currentPositionId);
+            if (!pos) return;
+            
             const equipment = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
             if (equipment.length === 0) {
                 alert('This position doesn\'t require any equipment!');
                 return;
             }
+            
+            // Remove the suggest action from history since we're taking a different action
+            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === pos.id);
+            if (lastSuggestIndex !== -1) {
+                appState.history.splice(lastSuggestIndex, 1);
+            }
+            
             appState.history.push({
                 action: 'missingEquipment',
+                positionId: pos.id,
                 equipment: equipment
             });
+            
             equipment.forEach(item => {
                 if (!appState.missingEquipment[item]) {
                     appState.missingEquipment[item] = 0;
                 }
                 appState.missingEquipment[item]++;
             });
-            appState.isPositionShown = false;
-            appState.currentPosition = null;
+            
+            appState.currentPositionId = null;
             saveState();
             updateEquipmentList();
             resetView();
@@ -928,30 +975,44 @@
             if (!confirm('Are you sure you want to permanently remove this position?')) {
                 return;
             }
-            const pos = appState.currentPosition;
+            const posId = appState.currentPositionId;
+            
+            // Remove the suggest action from history
+            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
+            if (lastSuggestIndex !== -1) {
+                appState.history.splice(lastSuggestIndex, 1);
+            }
+            
             appState.history.push({
                 action: 'remove',
-                positionId: pos.id
+                positionId: posId
             });
-            appState.removed.push(pos.id);
-            appState.isPositionShown = false;
-            appState.currentPosition = null;
+            
+            appState.removed.push(posId);
+            appState.currentPositionId = null;
             saveState();
             updateStats();
             resetView();
         }
 
         function skipPosition() {
+            // Skip just hides the current position without any permanent action
+            // Remove the suggest action from history since we're skipping
+            const posId = appState.currentPositionId;
+            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
+            if (lastSuggestIndex !== -1) {
+                appState.history.splice(lastSuggestIndex, 1);
+            }
+            
+            appState.currentPositionId = null;
+            appState.selectedRating = null;
+            saveState();
             resetView();
         }
 
         function resetView() {
             document.getElementById('suggestView').classList.remove('hidden');
             document.getElementById('positionView').classList.add('hidden');
-            appState.currentPosition = null;
-            appState.selectedRating = null;
-            appState.isPositionShown = false;
-            saveState();
         }
 
         function updateStats() {
@@ -1054,24 +1115,56 @@
             const lastAction = appState.history.pop();
             
             if (lastAction.action === 'suggest') {
-                // Undo a spin/suggest - just hide the current position
-                appState.isPositionShown = false;
-                appState.currentPosition = null;
+                // Undo a suggest - clear the current position and restore previous if any
+                appState.currentPositionId = lastAction.previousPositionId || null;
                 appState.selectedRating = null;
                 saveState();
-                resetView();
+                
+                if (appState.currentPositionId) {
+                    // Restore the previous position
+                    const pos = positions.find(p => p.id === appState.currentPositionId);
+                    if (pos) {
+                        displayPosition(pos);
+                    } else {
+                        resetView();
+                    }
+                } else {
+                    resetView();
+                }
             } else if (lastAction.action === 'complete') {
+                // Undo a complete - restore the position to suggested state
                 appState.completed = appState.completed.filter(id => id !== lastAction.positionId);
                 appState.liked = appState.liked.filter(id => id !== lastAction.positionId);
                 appState.disliked = appState.disliked.filter(id => id !== lastAction.positionId);
                 appState.favorited = appState.favorited.filter(id => id !== lastAction.positionId);
+                
+                // Restore the position as the current suggested position
+                appState.currentPositionId = lastAction.positionId;
+                appState.selectedRating = null;
                 saveState();
                 updateStats();
+                
+                // Display the position again
+                const pos = positions.find(p => p.id === lastAction.positionId);
+                if (pos) {
+                    displayPosition(pos);
+                }
             } else if (lastAction.action === 'remove') {
+                // Undo a remove - restore position to suggested state
                 appState.removed = appState.removed.filter(id => id !== lastAction.positionId);
+                
+                // Restore as current position
+                appState.currentPositionId = lastAction.positionId;
+                appState.selectedRating = null;
                 saveState();
                 updateStats();
+                
+                const pos = positions.find(p => p.id === lastAction.positionId);
+                if (pos) {
+                    displayPosition(pos);
+                }
             } else if (lastAction.action === 'missingEquipment') {
+                // Undo missing equipment - decrement counts and restore position
                 lastAction.equipment.forEach(item => {
                     if (appState.missingEquipment[item]) {
                         appState.missingEquipment[item]--;
@@ -1080,8 +1173,17 @@
                         }
                     }
                 });
+                
+                // Restore as current position
+                appState.currentPositionId = lastAction.positionId;
+                appState.selectedRating = null;
                 saveState();
                 updateEquipmentList();
+                
+                const pos = positions.find(p => p.id === lastAction.positionId);
+                if (pos) {
+                    displayPosition(pos);
+                }
             }
             
             alert('Last action undone!');
@@ -1103,10 +1205,9 @@
                 favorited: [],
                 removed: [],
                 missingEquipment: {},
-                currentPosition: null,
+                currentPositionId: null,
                 selectedRating: null,
-                history: [],
-                isPositionShown: false
+                history: []
             };
             saveState();
             updateStats();
@@ -1131,6 +1232,8 @@
                 await syncToCloud();
                 // Then pull any updates
                 await syncFromCloud();
+                // Restore current position after sync
+                restoreCurrentPosition();
                 alert('Sync completed successfully!');
             } catch (error) {
                 alert('Sync failed. Please try again.');
