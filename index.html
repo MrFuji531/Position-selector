@@ -583,8 +583,8 @@
         // SUPABASE CONFIGURATION
         // ==========================================
         // TODO: Replace these with your Supabase credentials
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+        const SUPABASE_URL = 'https://dgbbloirhopjkpnckrdp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmJsb2lyaG9wamtwbmNrcmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTcwMzYsImV4cCI6MjA4MzM3MzAzNn0.iVWe7_wVqvQjCIG70Jr9qka_Gn1WeFlRxsIjIvd0Ayg';
 
         // Supabase client setup
         let supabaseClient = null;
@@ -800,6 +800,13 @@
                 return;
             }
             const randomPos = available[Math.floor(Math.random() * available.length)];
+            
+            // Save previous state for undo
+            appState.history.push({
+                action: 'suggest',
+                positionId: randomPos.id
+            });
+            
             appState.currentPosition = randomPos;
             appState.selectedRating = null;
             appState.isPositionShown = true;
@@ -1032,13 +1039,25 @@
                 return;
             }
             const lastAction = appState.history.pop();
-            if (lastAction.action === 'complete') {
+            
+            if (lastAction.action === 'suggest') {
+                // Undo a spin/suggest - just hide the current position
+                appState.isPositionShown = false;
+                appState.currentPosition = null;
+                appState.selectedRating = null;
+                saveState();
+                resetView();
+            } else if (lastAction.action === 'complete') {
                 appState.completed = appState.completed.filter(id => id !== lastAction.positionId);
                 appState.liked = appState.liked.filter(id => id !== lastAction.positionId);
                 appState.disliked = appState.disliked.filter(id => id !== lastAction.positionId);
                 appState.favorited = appState.favorited.filter(id => id !== lastAction.positionId);
+                saveState();
+                updateStats();
             } else if (lastAction.action === 'remove') {
                 appState.removed = appState.removed.filter(id => id !== lastAction.positionId);
+                saveState();
+                updateStats();
             } else if (lastAction.action === 'missingEquipment') {
                 lastAction.equipment.forEach(item => {
                     if (appState.missingEquipment[item]) {
@@ -1048,10 +1067,10 @@
                         }
                     }
                 });
+                saveState();
+                updateEquipmentList();
             }
-            saveState();
-            updateStats();
-            updateEquipmentList();
+            
             alert('Last action undone!');
         }
 
