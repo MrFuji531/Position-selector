@@ -749,9 +749,18 @@
                     }
                 }
                 
-                // If there's a current position stored, show it
+                // If there's a current position stored AND it's shown AND it's still valid (not completed/removed)
                 if (appState.currentPosition && appState.isPositionShown) {
-                    displayPosition(appState.currentPosition);
+                    const posId = appState.currentPosition.id;
+                    // Check if this position has been completed or removed
+                    if (!appState.completed.includes(posId) && !appState.removed.includes(posId)) {
+                        displayPosition(appState.currentPosition);
+                    } else {
+                        // Position was completed/removed, clear it
+                        appState.currentPosition = null;
+                        appState.isPositionShown = false;
+                        saveState();
+                    }
                 }
                 
                 updateStats();
@@ -883,6 +892,8 @@
                 appState.favorited.push(pos.id);
             }
             appState.isPositionShown = false;
+            appState.currentPosition = null;
+            appState.selectedRating = null;
             saveState();
             updateStats();
             resetView();
@@ -906,6 +917,7 @@
                 appState.missingEquipment[item]++;
             });
             appState.isPositionShown = false;
+            appState.currentPosition = null;
             saveState();
             updateEquipmentList();
             resetView();
@@ -923,6 +935,7 @@
             });
             appState.removed.push(pos.id);
             appState.isPositionShown = false;
+            appState.currentPosition = null;
             saveState();
             updateStats();
             resetView();
