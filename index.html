@@ -1,1256 +1,758 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Position Explorer</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .progress-container {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            height: 30px;
-            position: relative;
-            margin-bottom: 10px;
-        }
-
-        .progress-fill {
-            background: linear-gradient(90deg, #4CAF50, #81C784);
-            height: 100%;
-            transition: width 0.3s ease;
-            border-radius: 10px;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            z-index: 1;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            color: white;
-            font-size: 14px;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .position-card {
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .position-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #667eea;
-        }
-
-        .position-difficulty {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-
-        .difficulty-beginner {
-            background: #C8E6C9;
-            color: #2E7D32;
-        }
-
-        .difficulty-intermediate {
-            background: #FFF9C4;
-            color: #F57F17;
-        }
-
-        .difficulty-advanced {
-            background: #FFCDD2;
-            color: #C62828;
-        }
-
-        .position-image {
-            width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            background: #f8f8f8;
-        }
-
-        .position-description {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            flex-grow: 1;
-        }
-
-        .tags-container {
-            margin-bottom: 20px;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #f0f0f0;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin: 3px;
-            color: #666;
-        }
-
-        .tag.toy {
-            background: #E1BEE7;
-            color: #6A1B9A;
-        }
-
-        .tag.bondage {
-            background: #FFCCBC;
-            color: #D84315;
-        }
-
-        .equipment-list {
-            background: #FFF3E0;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .equipment-list h4 {
-            color: #E65100;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .equipment-list ul {
-            list-style: none;
-        }
-
-        .equipment-list li {
-            color: #666;
-            padding: 5px 0;
-            font-size: 14px;
-        }
-
-        .equipment-list li:before {
-            content: "• ";
-            color: #E65100;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-success {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #FF9800;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #9E9E9E;
-            color: white;
-        }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .btn-small {
-            padding: 10px 15px;
-            font-size: 14px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: #666;
-        }
-
-        .nav {
-            display: flex;
-            background: white;
-            border-radius: 15px;
-            padding: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-btn {
-            flex: 1;
-            padding: 12px;
-            background: transparent;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .nav-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .equipment-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .equipment-name {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .equipment-count {
-            background: #667eea;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .top-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .top-actions button {
-            flex: 1;
-        }
-
-        .rating-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .rating-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .rating-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .rating-btn.selected {
-            border-color: #667eea;
-            background: #f0f0ff;
-        }
-
-        .position-list-item {
-            background: #f8f8f8;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .position-list-name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-
-        .position-list-description {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .position-list-tags {
-            margin-top: 8px;
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-
-            .header h1 {
-                font-size: 24px;
-            }
-
-            .position-name {
-                font-size: 20px;
-            }
-
-            .btn-group {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cuisine Spinner</title>
+  <style>
+    :root { --bg:#0b0c10; --panel:#12141a; --text:#e9eef7; --muted:#9aa7bd; --accent:#5aa7ff; --danger:#ff5a7a; }
+    * { box-sizing:border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    body { margin:0; background:var(--bg); color:var(--text); }
+    header { padding:14px 16px; border-bottom:1px solid #232632; display:flex; gap:10px; align-items:center; justify-content:space-between; }
+    header h1 { margin:0; font-size:16px; font-weight:800; letter-spacing:.2px; }
+    .tabs { display:flex; gap:8px; }
+    .tabbtn { background:transparent; border:1px solid #2a2f3d; color:var(--text); padding:8px 10px; border-radius:10px; font-weight:750; }
+    .tabbtn.active { border-color:var(--accent); color:var(--accent); }
+    main { padding:14px 14px 22px; max-width:980px; margin:0 auto; }
+    .grid { display:grid; gap:14px; grid-template-columns: 1fr; }
+    @media (min-width: 860px){ .grid { grid-template-columns: 1.2fr .8fr; } }
+    .card { background:var(--panel); border:1px solid #24283a; border-radius:16px; padding:14px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    button { cursor:pointer; border:0; border-radius:12px; padding:10px 12px; font-weight:850; }
+    .primary { background:var(--accent); color:#07111f; }
+    .ghost { background:transparent; border:1px solid #2a2f3d; color:var(--text); }
+    .danger { background:var(--danger); color:#12060a; }
+    .small { padding:8px 10px; border-radius:10px; font-weight:800; }
+    .muted { color:var(--muted); }
+    .bigbox {
+      margin-top:12px;
+      padding:18px;
+      border-radius:18px;
+      border:1px solid #2a2f3d;
+      background: #0f1220;
+      min-height:86px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:22px;
+      font-weight:950;
+      letter-spacing:.3px;
+    }
+    canvas { width:100%; height:auto; max-width:560px; display:block; margin:0 auto; }
+    .pointer {
+      width:0; height:0;
+      border-left:12px solid transparent;
+      border-right:12px solid transparent;
+      border-top:18px solid var(--accent);
+      margin: 0 auto 10px;
+      filter: drop-shadow(0 2px 6px rgba(90,167,255,.35));
+    }
+    .kpi { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; }
+    .kpi > div { background:#0f1220; border:1px solid #2a2f3d; border-radius:14px; padding:10px; }
+    .kpi .v { font-weight:950; font-size:16px; }
+    .kpi .l { font-size:12px; color:var(--muted); margin-top:2px; }
+    .rank-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px; border:1px solid #2a2f3d; border-radius:14px; background:#0f1220; margin:8px 0; }
+    .rank-name { font-weight:900; }
+    .rank-actions { display:flex; gap:6px; }
+    select {
+      background:#0f1220; color:var(--text);
+      border:1px solid #2a2f3d; border-radius:12px;
+      padding:10px 12px; font-weight:800;
+    }
+    .sync-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-left: 8px;
+    }
+    .sync-status.syncing { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    .sync-status.synced { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+    .sync-status.error { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+    #debugLog {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 150px;
+      overflow: auto;
+      background: rgba(0,0,0,0.9);
+      color: #0f0;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 8px;
+      display: none;
+    }
+    #debugLog.show { display: block; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Positions</h1>
+<header>
+  <h1>Cuisine Spinner 🌎 <span id="syncStatus" class="sync-status"></span></h1>
+  <div class="tabs">
+    <button class="tabbtn active" id="tabSpin">Spinner</button>
+    <button class="tabbtn" id="tabRank">Rankings</button>
+  </div>
+</header>
+
+<main>
+  <section id="spinView">
+    <div class="grid">
+      <div class="card">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="900" height="900"></canvas>
+
+        <div class="row" style="justify-content:center; margin-top:12px;">
+          <button class="primary" id="spinBtn">SPIN</button>
+          <button class="ghost" id="undoBtn">Undo</button>
+          <button class="ghost small" id="syncBtn">🔄 Sync</button>
+          <button class="ghost small" id="debugBtn">🐛</button>
+          <button class="danger" id="resetBtn">Reset</button>
         </div>
 
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-                <div class="progress-text" id="progressText">0%</div>
-            </div>
-            <div class="stats">
-                <div class="stat">
-                    <span class="stat-value" id="completedCount">0</span>
-                    <span class="stat-label">Completed</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value" id="favoritesCount">0</span>
-                    <span class="stat-label">❤️ Favorites</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value" id="likedCount">0</span>
-                    <span class="stat-label">👍 Liked</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value" id="remainingCount">208</span>
-                    <span class="stat-label">Remaining</span>
-                </div>
-            </div>
+        <div class="bigbox" id="nextBox">Next destination: —</div>
+
+        <div class="kpi">
+          <div><div class="v" id="remainingCount">—</div><div class="l">Remaining</div></div>
+          <div><div class="v" id="rankedCount">—</div><div class="l">Ranked</div></div>
         </div>
-
-        <div class="top-actions">
-            <button class="btn btn-secondary btn-small" onclick="undoLastAction()">↩️ Undo</button>
-            <button class="btn btn-secondary btn-small" onclick="manualSync()" id="syncBtn">🔄 Sync Now</button>
-            <button class="btn btn-danger btn-small" onclick="confirmReset()">🔄 Reset All</button>
-        </div>
-
-        <div class="nav">
-            <button class="nav-btn active" onclick="switchTab('positions')">Positions</button>
-            <button class="nav-btn" onclick="switchTab('equipment')">Equipment</button>
-            <button class="nav-btn" onclick="switchTab('stats')">Stats</button>
-        </div>
-
-        <!-- Positions Tab -->
-        <div id="positionsTab" class="tab-content active">
-            <div id="suggestView">
-                <div class="card">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🎯</div>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="suggestPosition()">Suggest Position</button>
-            </div>
-
-            <div id="positionView" class="hidden">
-                <div class="card position-card">
-                    <h2 class="position-name" id="positionName"></h2>
-                    <span class="position-difficulty" id="positionDifficulty"></span>
-                    <div class="tags-container" id="tagsContainer"></div>
-                    <img id="positionImage" class="position-image hidden" alt="Position illustration">
-                    <div id="equipmentNeeded" class="hidden equipment-list">
-                        <h4>Equipment Needed:</h4>
-                        <ul id="equipmentList"></ul>
-                    </div>
-                    <p class="position-description" id="positionDescription"></p>
-                </div>
-
-                <button class="btn btn-success" onclick="showRatingOptions()">✅ Complete</button>
-                
-                <div id="ratingOptions" class="hidden">
-                    <div class="card">
-                        <h3 style="margin-bottom: 15px; text-align: center;">How was it?</h3>
-                        <div class="rating-buttons">
-                            <button class="rating-btn" onclick="selectRating('dislike')" id="dislikeBtn">👎</button>
-                            <button class="rating-btn" onclick="selectRating('like')" id="likeBtn">👍</button>
-                            <button class="rating-btn" onclick="selectRating('favorite')" id="favoriteBtn">❤️</button>
-                        </div>
-                        <button class="btn btn-primary" onclick="completePosition()" style="margin-top: 15px;">Save Rating</button>
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-warning btn-small" onclick="dontHaveEquipment()">🚫 don't have the toys needed yet!</button>
-                    <button class="btn btn-danger btn-small" onclick="dontWantToDo()">❌ Don't Want to try</button>
-                    <button class="btn btn-secondary btn-small" onclick="skipPosition()">⏭️ Skip</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Equipment Tab -->
-        <div id="equipmentTab" class="tab-content">
-            <div class="card">
-                <h3 style="margin-bottom: 20px;">Missing Equipment</h3>
-                <div id="equipmentListContainer">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">✅</div>
-                        <h3>All set!</h3>
-                        <p>No missing equipment yet</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Tab -->
-        <div id="statsTab" class="tab-content">
-            <div class="card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 20px;">📊 Our Statistics</h3>
-                <div class="stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                    <div class="stat" style="background: #E8F5E9; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #2E7D32;" id="statsLikedCount">0</span>
-                        <span class="stat-label" style="color: #2E7D32;">👍 Liked</span>
-                    </div>
-                    <div class="stat" style="background: #FFEBEE; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #C62828;" id="statsDislikedCount">0</span>
-                        <span class="stat-label" style="color: #C62828;">👎 Disliked (booo)</span>
-                    </div>
-                    <div class="stat" style="background: #FCE4EC; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #880E4F;" id="statsFavoritedCount">0</span>
-                        <span class="stat-label" style="color: #880E4F;">❤️ Favorites</span>
-                    </div>
-                    <div class="stat" style="background: #F3E5F5; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #4A148C;" id="statsRemovedCount">0</span>
-                        <span class="stat-label" style="color: #4A148C;">❌ Removed</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Favorites -->
-            <div class="card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 15px; color: #880E4F;">❤️ Favorite Positions</h3>
-                <div id="favoritesList"></div>
-            </div>
-
-            <!-- Liked -->
-            <div class="card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 15px; color: #2E7D32;">👍 Liked Positions</h3>
-                <div id="likedList"></div>
-            </div>
-
-            <!-- Disliked -->
-            <div class="card">
-                <h3 style="margin-bottom: 15px; color: #C62828;">👎 Disliked Positions</h3>
-                <div id="dislikedList"></div>
-            </div>
-        </div>
+      </div>
     </div>
+  </section>
 
-    <script>
-        // ==========================================
-        // SUPABASE CONFIGURATION
-        // ==========================================
-        const SUPABASE_URL = 'https://dgbbloirhopjkpnckrdp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmJsb2lyaG9wamtwbmNrcmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTcwMzYsImV4cCI6MjA4MzM3MzAzNn0.iVWe7_wVqvQjCIG70Jr9qka_Gn1WeFlRxsIjIvd0Ayg';
+  <section id="rankView" style="display:none;">
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <div style="font-weight:950;">Rankings</div>
+          <button class="danger small" id="resetBtn2">Reset</button>
+        </div>
 
-        // Supabase client setup
-        let supabaseClient = null;
-        let userCode = null;
-        let syncEnabled = false;
+        <div id="pendingBanner" class="bigbox" style="display:none; margin-top:12px;"></div>
 
-        function initSupabase() {
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
-                console.log('Supabase not configured - using localStorage only');
-                return;
-            }
-            
-            // Simple fetch-based Supabase client
-            supabaseClient = {
-                url: SUPABASE_URL,
-                key: SUPABASE_ANON_KEY,
-                
-                async query(sql, params = []) {
-                    const response = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': this.key,
-                            'Authorization': `Bearer ${this.key}`,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ query: sql, params })
-                    });
-                    return response.json();
-                },
-                
-                async getData(code) {
-                    const response = await fetch(`${this.url}/rest/v1/position_data?code=eq.${code}`, {
-                        method: 'GET',
-                        headers: {
-                            'apikey': this.key,
-                            'Authorization': `Bearer ${this.key}`,
-                        }
-                    });
-                    const data = await response.json();
-                    return data.length > 0 ? data[0] : null;
-                },
-                
-                async upsertData(code, stateData) {
-                    const response = await fetch(`${this.url}/rest/v1/position_data`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': this.key,
-                            'Authorization': `Bearer ${this.key}`,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'resolution=merge-duplicates'
-                        },
-                        body: JSON.stringify({
-                            code: code,
-                            data: stateData,
-                            updated_at: new Date().toISOString()
-                        })
-                    });
-                    return response.ok;
-                }
-            };
-            
-            syncEnabled = true;
+        <div class="row" style="margin-top:12px;">
+          <select id="insertPos"></select>
+          <button class="primary" id="placeBtn">Place</button>
+          <button class="ghost" id="skipPendingBtn">Skip (add back)</button>
+        </div>
+
+        <div id="rankingList" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:950;">Latest selected</div>
+        <div class="bigbox" id="latestBox" style="margin-top:12px; min-height:72px; font-size:18px;">—</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="debugLog"></div>
+
+<script>
+// ==========================================
+// DEBUG LOGGING
+// ==========================================
+const debugLog = document.getElementById('debugLog');
+const debugBtn = document.getElementById('debugBtn');
+let debugEnabled = false;
+
+debugBtn.onclick = () => {
+  debugEnabled = !debugEnabled;
+  debugLog.classList.toggle('show', debugEnabled);
+};
+
+function log(msg) {
+  console.log(msg);
+  if (debugEnabled) {
+    const line = document.createElement('div');
+    line.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;
+    debugLog.appendChild(line);
+    debugLog.scrollTop = debugLog.scrollHeight;
+  }
+}
+
+// ==========================================
+// SUPABASE CONFIGURATION
+// ==========================================
+const SUPABASE_URL = 'https://dgbbloirhopjkpnckrdp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmJsb2lyaG9wamtwbmNrcmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTcwMzYsImV4cCI6MjA4MzM3MzAzNn0.iVWe7_wVqvQjCIG70Jr9qka_Gn1WeFlRxsIjIvd0Ayg';
+
+let userCode = null;
+let syncEnabled = true;
+let isSyncing = false;
+
+const syncStatusEl = document.getElementById('syncStatus');
+
+function setSyncStatus(status, message) {
+  syncStatusEl.className = 'sync-status ' + status;
+  syncStatusEl.textContent = message;
+  log(`Sync status: ${status} - ${message}`);
+  if (status === 'synced') {
+    setTimeout(() => {
+      if (syncStatusEl.textContent === message) {
+        syncStatusEl.textContent = '';
+        syncStatusEl.className = 'sync-status';
+      }
+    }, 2000);
+  }
+}
+
+function promptForCode() {
+  const savedCode = localStorage.getItem('cuisineUserCode');
+  if (savedCode) {
+    userCode = savedCode;
+    log(`Using saved code: ${userCode}`);
+    return true;
+  }
+  
+  const code = prompt('Enter your shared code to sync data across devices:');
+  if (code && code.trim()) {
+    userCode = code.trim();
+    localStorage.setItem('cuisineUserCode', userCode);
+    log(`New code saved: ${userCode}`);
+    return true;
+  }
+  return false;
+}
+
+// Debounced sync
+let syncTimeout = null;
+function debouncedSync() {
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    syncToCloud();
+  }, 500);
+}
+
+async function syncToCloud() {
+  if (!userCode || isSyncing) {
+    log(`Sync skipped: userCode=${userCode}, isSyncing=${isSyncing}`);
+    return;
+  }
+  
+  isSyncing = true;
+  setSyncStatus('syncing', 'Saving...');
+  
+  try {
+    const payload = {
+      code: userCode,
+      data: state,
+      updated_at: new Date().toISOString()
+    };
+    
+    log(`POST to cuisine_data: ${JSON.stringify(payload).substring(0, 100)}...`);
+    
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/cuisine_data`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    log(`Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const text = await response.text();
+      log(`Error response: ${text}`);
+      throw new Error(`${response.status}: ${text}`);
+    }
+    
+    log('Sync successful');
+    setSyncStatus('synced', 'Saved ✓');
+  } catch (error) {
+    log(`Sync error: ${error.message}`);
+    setSyncStatus('error', 'Failed');
+  } finally {
+    isSyncing = false;
+  }
+}
+
+async function syncFromCloud() {
+  if (!userCode) return false;
+  
+  setSyncStatus('syncing', 'Loading...');
+  log(`Fetching data for code: ${userCode}`);
+  
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/cuisine_data?code=eq.${encodeURIComponent(userCode)}&select=*`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         }
+      }
+    );
+    
+    log(`Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      throw new Error(`${response.status}`);
+    }
+    
+    const data = await response.json();
+    log(`Got ${data.length} rows`);
+    
+    if (data.length > 0 && data[0].data) {
+      const cloudData = data[0].data;
+      state = {
+        remaining: cloudData.remaining || [...ALL_COUNTRIES],
+        history: cloudData.history || [],
+        ranked: cloudData.ranked || [],
+        pending: cloudData.pending || null,
+        wheelAngle: cloudData.wheelAngle || 0
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      log(`Loaded state: ${state.remaining.length} remaining, ${state.ranked.length} ranked`);
+      setSyncStatus('synced', 'Loaded ✓');
+      return true;
+    } else {
+      log('No cloud data found');
+      setSyncStatus('', '');
+    }
+  } catch (error) {
+    log(`Load error: ${error.message}`);
+    setSyncStatus('error', 'Load failed');
+  }
+  return false;
+}
 
-        // ==========================================
-        // SYNC FUNCTIONS
-        // ==========================================
-        
-        async function promptForCode() {
-            const savedCode = localStorage.getItem('userCode');
-            if (savedCode) {
-                userCode = savedCode;
-                return true;
-            }
-            
-            const code = prompt('Enter your shared code to sync data across devices:');
-            if (code && code.trim()) {
-                userCode = code.trim();
-                localStorage.setItem('userCode', userCode);
-                return true;
-            }
-            return false;
-        }
+async function manualSync() {
+  if (!userCode) {
+    if (!promptForCode()) {
+      alert('No sync code provided.');
+      return;
+    }
+  }
+  
+  await syncFromCloud();
+  renderAll();
+}
 
-        async function syncToCloud() {
-            if (!syncEnabled || !userCode || !supabaseClient) return;
-            
-            try {
-                await supabaseClient.upsertData(userCode, appState);
-                console.log('Synced to cloud successfully');
-            } catch (error) {
-                console.error('Sync error:', error);
-            }
-        }
+// ==========================================
+// APP STATE
+// ==========================================
 
-        async function syncFromCloud() {
-            if (!syncEnabled || !userCode || !supabaseClient) return;
-            
-            try {
-                const cloudData = await supabaseClient.getData(userCode);
-                if (cloudData && cloudData.data) {
-                    // Merge cloud data with local data (cloud takes precedence)
-                    appState = { ...appState, ...cloudData.data };
-                    saveStateLocal(); // Save merged data to localStorage without triggering cloud sync
-                    updateStats();
-                    console.log('Synced from cloud successfully');
-                    return true;
-                }
-            } catch (error) {
-                console.error('Sync from cloud error:', error);
-            }
-            return false;
-        }
+const ALL_COUNTRIES = [
+  "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan",
+  "Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei Darussalam","Bulgaria","Burkina Faso","Burundi",
+  "Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Democratic Republic of the Congo","Costa Rica","Côte d'Ivoire","Croatia","Cuba","Cyprus","Czechia",
+  "Denmark","Djibouti","Dominica","Dominican Republic",
+  "Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia",
+  "Fiji","Finland","France",
+  "Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
+  "Haiti","Honduras","Hungary",
+  "Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy",
+  "Jamaica","Japan","Jordan",
+  "Kazakhstan","Kenya","Kiribati","Korea, Democratic People's Republic of","Korea, Republic of","Kuwait","Kyrgyzstan",
+  "Lao People's Democratic Republic","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+  "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia (Federated States of)","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar",
+  "Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Macedonia","Norway",
+  "Oman",
+  "Pakistan","Palau","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal",
+  "Qatar",
+  "Romania","Russian Federation","Rwanda",
+  "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syrian Arab Republic",
+  "Tajikistan","Tanzania, United Republic of","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu",
+  "Uganda","Ukraine","United Arab Emirates","United Kingdom","United States of America","Uruguay","Uzbekistan",
+  "Vanuatu","Venezuela","Viet Nam",
+  "Yemen",
+  "Zambia","Zimbabwe"
+];
 
-        async function uploadLocalData() {
-            if (!syncEnabled || !userCode) return;
-            
-            // Upload current localStorage data to cloud
-            await syncToCloud();
-            alert('Your progress has been uploaded to the cloud!');
-        }
+const STORAGE_KEY = "countrySpinner.un193.v2";
 
-        // ==========================================
-        // EXISTING CODE
-        // ==========================================
-        
-        let positions = [];
-        let appState = {
-            completed: [],
-            liked: [],
-            disliked: [],
-            favorited: [],
-            removed: [],
-            missingEquipment: {},
-            currentPositionId: null,  // Store only the ID for persistence
-            selectedRating: null,
-            history: []
-        };
+function loadState(){ 
+  try { 
+    const raw = localStorage.getItem(STORAGE_KEY); 
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        remaining: parsed.remaining || [...ALL_COUNTRIES],
+        history: parsed.history || [],
+        ranked: parsed.ranked || [],
+        pending: parsed.pending || null,
+        wheelAngle: parsed.wheelAngle || 0
+      };
+    }
+    return null;
+  } catch { 
+    return null; 
+  } 
+}
 
-        async function loadPositions() {
-            try {
-                const response = await fetch('sex_positions_comprehensive.json');
-                const data = await response.json();
-                positions = data.positions;
-                
-                // Initialize Supabase
-                initSupabase();
-                
-                // Load local state first
-                loadState();
-                
-                // If sync is enabled, try to sync from cloud
-                if (syncEnabled) {
-                    const hasCode = await promptForCode();
-                    if (hasCode) {
-                        const synced = await syncFromCloud();
-                        if (!synced) {
-                            // No cloud data found, upload local data
-                            await uploadLocalData();
-                        }
-                    }
-                }
-                
-                // Restore the current position if one was saved
-                restoreCurrentPosition();
-                
-                updateStats();
-            } catch (error) {
-                console.error('Error loading positions:', error);
-                alert('Error loading data. Please make sure sex_positions_comprehensive.json is in the same folder.');
-            }
-        }
+function saveState() { 
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  log(`State saved locally: ${state.remaining.length} remaining`);
+  if (userCode) {
+    debouncedSync();
+  }
+}
 
-        // Restore the current position from saved state
-        function restoreCurrentPosition() {
-            if (appState.currentPositionId) {
-                // Find the position by ID
-                const pos = positions.find(p => p.id === appState.currentPositionId);
-                
-                // Check if this position is still valid (not completed or removed)
-                if (pos && !appState.completed.includes(pos.id) && !appState.removed.includes(pos.id)) {
-                    displayPosition(pos);
-                } else {
-                    // Position was completed/removed or not found, clear it
-                    appState.currentPositionId = null;
-                    appState.selectedRating = null;
-                    saveState();
-                }
-            }
-        }
+function freshState() { 
+  return { 
+    remaining: [...ALL_COUNTRIES], 
+    history: [], 
+    ranked: [], 
+    pending: null, 
+    wheelAngle: 0 
+  }; 
+}
 
-        // Save to localStorage only (without cloud sync)
-        function saveStateLocal() {
-            localStorage.setItem('positionExplorerState', JSON.stringify(appState));
-        }
+let state = loadState() || freshState();
 
-        function saveState() {
-            localStorage.setItem('positionExplorerState', JSON.stringify(appState));
-            // Auto-sync to cloud after saving
-            if (syncEnabled) {
-                syncToCloud();
-            }
-        }
+// ==========================================
+// UI ELEMENTS
+// ==========================================
 
-        function loadState() {
-            const saved = localStorage.getItem('positionExplorerState');
-            if (saved) {
-                const loadedState = JSON.parse(saved);
-                // Merge with default state to ensure all properties exist
-                appState = { ...appState, ...loadedState };
-                
-                // Migration: convert old currentPosition object to currentPositionId
-                if (loadedState.currentPosition && !loadedState.currentPositionId) {
-                    appState.currentPositionId = loadedState.currentPosition.id;
-                }
-                // Migration: convert old isPositionShown to currentPositionId presence
-                if (loadedState.isPositionShown === false) {
-                    appState.currentPositionId = null;
-                }
-                // Clean up old properties
-                delete appState.currentPosition;
-                delete appState.isPositionShown;
-            }
-        }
+const tabSpin = document.getElementById("tabSpin");
+const tabRank = document.getElementById("tabRank");
+const spinView = document.getElementById("spinView");
+const rankView = document.getElementById("rankView");
 
-        function getAvailablePositions() {
-            return positions.filter(pos => {
-                if (appState.completed.includes(pos.id) || appState.removed.includes(pos.id)) {
-                    return false;
-                }
-                if (pos.toy || pos.bondage) {
-                    const required = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
-                    for (let equipment of required) {
-                        if (appState.missingEquipment[equipment]) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            });
-        }
+tabSpin.onclick = () => showTab("spin");
+tabRank.onclick = () => showTab("rank");
 
-        function suggestPosition() {
-            const available = getAvailablePositions();
-            if (available.length === 0) {
-                alert('No more positions available! Check your missing equipment or reset to start over.');
-                return;
-            }
-            const randomPos = available[Math.floor(Math.random() * available.length)];
-            
-            // Save action to history for undo
-            appState.history.push({
-                action: 'suggest',
-                positionId: randomPos.id,
-                previousPositionId: appState.currentPositionId // Store previous state for proper undo
-            });
-            
-            // Save the position ID (persists across refreshes)
-            appState.currentPositionId = randomPos.id;
-            appState.selectedRating = null;
-            saveState();
-            
-            displayPosition(randomPos);
-        }
+function showTab(which){
+  const isSpin = which === "spin";
+  spinView.style.display = isSpin ? "block" : "none";
+  rankView.style.display = isSpin ? "none" : "block";
+  tabSpin.classList.toggle("active", isSpin);
+  tabRank.classList.toggle("active", !isSpin);
+  renderAll();
+}
 
-        function displayPosition(pos) {
-            document.getElementById('suggestView').classList.add('hidden');
-            document.getElementById('positionView').classList.remove('hidden');
-            document.getElementById('ratingOptions').classList.add('hidden');
+const wheel = document.getElementById("wheel");
+const ctx = wheel.getContext("2d");
+const spinBtn = document.getElementById("spinBtn");
+const undoBtn = document.getElementById("undoBtn");
+const resetBtn = document.getElementById("resetBtn");
+const resetBtn2 = document.getElementById("resetBtn2");
+const syncBtn = document.getElementById("syncBtn");
+const nextBox = document.getElementById("nextBox");
+const remainingCount = document.getElementById("remainingCount");
+const rankedCount = document.getElementById("rankedCount");
 
-            document.getElementById('positionName').textContent = pos.name;
-            document.getElementById('positionDescription').textContent = pos.description;
-            
-            const difficultyEl = document.getElementById('positionDifficulty');
-            difficultyEl.textContent = pos.difficulty;
-            difficultyEl.className = 'position-difficulty difficulty-' + pos.difficulty;
+const pendingBanner = document.getElementById("pendingBanner");
+const insertPos = document.getElementById("insertPos");
+const placeBtn = document.getElementById("placeBtn");
+const skipPendingBtn = document.getElementById("skipPendingBtn");
+const rankingList = document.getElementById("rankingList");
+const latestBox = document.getElementById("latestBox");
 
-            const imageEl = document.getElementById('positionImage');
-            if (pos.image_file) {
-                imageEl.src = pos.image_file;
-                imageEl.classList.remove('hidden');
-                imageEl.onerror = function() {
-                    this.classList.add('hidden');
-                };
-            } else {
-                imageEl.classList.add('hidden');
-            }
+syncBtn.onclick = manualSync;
 
-            const tagsContainer = document.getElementById('tagsContainer');
-            tagsContainer.innerHTML = '';
-            if (pos.toy) tagsContainer.innerHTML += '<span class="tag toy">🎀 Toy</span>';
-            if (pos.bondage) tagsContainer.innerHTML += '<span class="tag bondage">🔗 Bondage</span>';
+function segmentColor(i, n){
+  const hue = (i * (360 / Math.max(n,1))) % 360;
+  return `hsl(${hue} 70% 52%)`;
+}
 
-            const equipmentNeeded = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
-            if (equipmentNeeded.length > 0) {
-                document.getElementById('equipmentNeeded').classList.remove('hidden');
-                document.getElementById('equipmentList').innerHTML = equipmentNeeded.map(item => `<li>${item}</li>`).join('');
-            } else {
-                document.getElementById('equipmentNeeded').classList.add('hidden');
-            }
+function drawWheel(){
+  const items = state.remaining;
+  const n = items.length;
+  const W = wheel.width, H = wheel.height;
+  const cx = W/2, cy = H/2;
+  const r = Math.min(W,H)*0.44;
 
-            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
-        }
+  ctx.clearRect(0,0,W,H);
 
-        function showRatingOptions() {
-            document.getElementById('ratingOptions').classList.remove('hidden');
-        }
+  ctx.beginPath();
+  ctx.arc(cx, cy, r+18, 0, Math.PI*2);
+  ctx.fillStyle = "#0f1220";
+  ctx.fill();
+  ctx.strokeStyle = "#2a2f3d";
+  ctx.lineWidth = 5;
+  ctx.stroke();
 
-        function selectRating(rating) {
-            appState.selectedRating = rating;
-            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
-            document.getElementById(rating + 'Btn').classList.add('selected');
-        }
+  if (n === 0){
+    ctx.fillStyle = "#e9eef7";
+    ctx.font = "900 34px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("All done 🎉", cx, cy);
+    return;
+  }
 
-        function completePosition() {
-            if (!appState.selectedRating) {
-                alert('Please select a rating first!');
-                return;
-            }
-            const posId = appState.currentPositionId;
-            
-            // Update history - remove the suggest action and replace with complete
-            // Find and remove the last suggest action for this position
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
-            // Add complete action to history
-            appState.history.push({
-                action: 'complete',
-                positionId: posId,
-                rating: appState.selectedRating
-            });
-            
-            appState.completed.push(posId);
-            if (appState.selectedRating === 'like') {
-                appState.liked.push(posId);
-            } else if (appState.selectedRating === 'dislike') {
-                appState.disliked.push(posId);
-            } else if (appState.selectedRating === 'favorite') {
-                appState.favorited.push(posId);
-            }
-            
-            appState.currentPositionId = null;
-            appState.selectedRating = null;
-            saveState();
-            updateStats();
-            resetView();
-        }
+  const anglePer = (Math.PI * 2) / n;
+  const startAngle = state.wheelAngle;
 
-        function dontHaveEquipment() {
-            const pos = positions.find(p => p.id === appState.currentPositionId);
-            if (!pos) return;
-            
-            const equipment = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
-            if (equipment.length === 0) {
-                alert('This position doesn\'t require any equipment!');
-                return;
-            }
-            
-            // Remove the suggest action from history since we're taking a different action
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === pos.id);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
-            appState.history.push({
-                action: 'missingEquipment',
-                positionId: pos.id,
-                equipment: equipment
-            });
-            
-            equipment.forEach(item => {
-                if (!appState.missingEquipment[item]) {
-                    appState.missingEquipment[item] = 0;
-                }
-                appState.missingEquipment[item]++;
-            });
-            
-            appState.currentPositionId = null;
-            saveState();
-            updateEquipmentList();
-            resetView();
-            setTimeout(() => suggestPosition(), 300);
-        }
+  const SHOW_NAMES_THRESHOLD = 18;
+  const showNames = n <= SHOW_NAMES_THRESHOLD;
 
-        function dontWantToDo() {
-            if (!confirm('Are you sure you want to permanently remove this position?')) {
-                return;
-            }
-            const posId = appState.currentPositionId;
-            
-            // Remove the suggest action from history
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
-            appState.history.push({
-                action: 'remove',
-                positionId: posId
-            });
-            
-            appState.removed.push(posId);
-            appState.currentPositionId = null;
-            saveState();
-            updateStats();
-            resetView();
-        }
+  for (let i=0; i<n; i++){
+    const a0 = startAngle + i*anglePer;
+    const a1 = a0 + anglePer;
 
-        function skipPosition() {
-            // Skip just hides the current position without any permanent action
-            // Remove the suggest action from history since we're skipping
-            const posId = appState.currentPositionId;
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
-            appState.currentPositionId = null;
-            appState.selectedRating = null;
-            saveState();
-            resetView();
-        }
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, a0, a1);
+    ctx.closePath();
+    ctx.fillStyle = segmentColor(i, n);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,.22)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-        function resetView() {
-            document.getElementById('suggestView').classList.remove('hidden');
-            document.getElementById('positionView').classList.add('hidden');
-        }
+    const mid = (a0 + a1)/2;
 
-        function updateStats() {
-            const total = positions.length;
-            const completed = appState.completed.length;
-            const percentage = Math.round((completed / total) * 100);
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressText').textContent = percentage + '%';
-            document.getElementById('completedCount').textContent = completed;
-            document.getElementById('favoritesCount').textContent = appState.favorited.length;
-            document.getElementById('likedCount').textContent = appState.liked.length;
-            document.getElementById('remainingCount').textContent = total - completed - appState.removed.length;
-        }
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(mid);
 
-        function updateEquipmentList() {
-            const container = document.getElementById('equipmentListContainer');
-            const equipment = Object.keys(appState.missingEquipment);
-            if (equipment.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">✅</div>
-                        <h3>All set!</h3>
-                        <p>No missing equipment yet</p>
-                    </div>
-                `;
-                return;
-            }
-            container.innerHTML = equipment.map(item => `
-                <div class="equipment-item">
-                    <span class="equipment-name">${item}</span>
-                    <div>
-                        <span class="equipment-count">${appState.missingEquipment[item]} positions</span>
-                        <button class="btn btn-success btn-small" style="margin-left: 10px; width: auto; padding: 8px 15px;" onclick="markEquipmentAsOwned('${item}')">Got it!</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+    if (showNames){
+      const label = items[i].length > 20 ? items[i].slice(0,20) + "…" : items[i];
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#07111f";
+      ctx.font = "900 20px system-ui";
+      ctx.fillText(label, r-14, 7);
+    } else {
+      const labelNum = (i+1).toString();
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(7,17,31,.92)";
+      ctx.font = "950 28px system-ui";
+      ctx.fillText(labelNum, r*0.70, 10);
+    }
 
-        function markEquipmentAsOwned(equipment) {
-            delete appState.missingEquipment[equipment];
-            saveState();
-            updateEquipmentList();
-            alert(`Great! Positions requiring "${equipment}" are now available.`);
-        }
+    ctx.restore();
+  }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            if (tab === 'positions') {
-                document.querySelector('.nav-btn:nth-child(1)').classList.add('active');
-                document.getElementById('positionsTab').classList.add('active');
-            } else if (tab === 'equipment') {
-                document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
-                document.getElementById('equipmentTab').classList.add('active');
-                updateEquipmentList();
-            } else if (tab === 'stats') {
-                document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
-                document.getElementById('statsTab').classList.add('active');
-                updateStatsTab();
-            }
-        }
+  ctx.beginPath();
+  ctx.arc(cx, cy, 70, 0, Math.PI*2);
+  ctx.fillStyle = "#12141a";
+  ctx.fill();
+  ctx.strokeStyle = "#2a2f3d";
+  ctx.lineWidth = 5;
+  ctx.stroke();
 
-        function updateStatsTab() {
-            document.getElementById('statsLikedCount').textContent = appState.liked.length;
-            document.getElementById('statsDislikedCount').textContent = appState.disliked.length;
-            document.getElementById('statsFavoritedCount').textContent = appState.favorited.length;
-            document.getElementById('statsRemovedCount').textContent = appState.removed.length;
+  ctx.fillStyle = "#e9eef7";
+  ctx.font = "950 18px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("SPIN", cx, cy+6);
+}
 
-            function renderPositionList(positionIds) {
-                if (positionIds.length === 0) {
-                    return `<div class="empty-state"><div class="empty-state-icon">📭</div><p style="color: #999;">None yet</p></div>`;
-                }
-                return positionIds.map(id => {
-                    const pos = positions.find(p => p.id === id);
-                    if (!pos) return '';
-                    let tags = '';
-                    if (pos.toy) tags += '<span class="tag toy">🎀 Toy</span>';
-                    if (pos.bondage) tags += '<span class="tag bondage">🔗 Bondage</span>';
-                    tags += `<span class="tag difficulty-${pos.difficulty}">${pos.difficulty}</span>`;
-                    return `
-                        <div class="position-list-item">
-                            <div class="position-list-name">${pos.name}</div>
-                            <div class="position-list-description">${pos.description}</div>
-                            <div class="position-list-tags">${tags}</div>
-                        </div>
-                    `;
-                }).join('');
-            }
+function pickSelectedByPointer(){
+  const n = state.remaining.length;
+  if (n === 0) return null;
+  const anglePer = (Math.PI*2)/n;
+  const topAngle = -Math.PI/2;
+  let diff = topAngle - state.wheelAngle;
+  diff = ((diff % (Math.PI*2)) + (Math.PI*2)) % (Math.PI*2);
+  const idx = Math.floor(diff / anglePer) % n;
+  return { idx, name: state.remaining[idx] };
+}
 
-            document.getElementById('favoritesList').innerHTML = renderPositionList(appState.favorited);
-            document.getElementById('likedList').innerHTML = renderPositionList(appState.liked);
-            document.getElementById('dislikedList').innerHTML = renderPositionList(appState.disliked);
-        }
+function updateCounts(){
+  remainingCount.textContent = String(state.remaining.length);
+  rankedCount.textContent = String(state.ranked.length);
+}
 
-        function undoLastAction() {
-            if (appState.history.length === 0) {
-                alert('Nothing to undo!');
-                return;
-            }
-            const lastAction = appState.history.pop();
-            
-            if (lastAction.action === 'suggest') {
-                // Undo a suggest - clear the current position and restore previous if any
-                appState.currentPositionId = lastAction.previousPositionId || null;
-                appState.selectedRating = null;
-                saveState();
-                
-                if (appState.currentPositionId) {
-                    // Restore the previous position
-                    const pos = positions.find(p => p.id === appState.currentPositionId);
-                    if (pos) {
-                        displayPosition(pos);
-                    } else {
-                        resetView();
-                    }
-                } else {
-                    resetView();
-                }
-            } else if (lastAction.action === 'complete') {
-                // Undo a complete - restore the position to suggested state
-                appState.completed = appState.completed.filter(id => id !== lastAction.positionId);
-                appState.liked = appState.liked.filter(id => id !== lastAction.positionId);
-                appState.disliked = appState.disliked.filter(id => id !== lastAction.positionId);
-                appState.favorited = appState.favorited.filter(id => id !== lastAction.positionId);
-                
-                // Restore the position as the current suggested position
-                appState.currentPositionId = lastAction.positionId;
-                appState.selectedRating = null;
-                saveState();
-                updateStats();
-                
-                // Display the position again
-                const pos = positions.find(p => p.id === lastAction.positionId);
-                if (pos) {
-                    displayPosition(pos);
-                }
-            } else if (lastAction.action === 'remove') {
-                // Undo a remove - restore position to suggested state
-                appState.removed = appState.removed.filter(id => id !== lastAction.positionId);
-                
-                // Restore as current position
-                appState.currentPositionId = lastAction.positionId;
-                appState.selectedRating = null;
-                saveState();
-                updateStats();
-                
-                const pos = positions.find(p => p.id === lastAction.positionId);
-                if (pos) {
-                    displayPosition(pos);
-                }
-            } else if (lastAction.action === 'missingEquipment') {
-                // Undo missing equipment - decrement counts and restore position
-                lastAction.equipment.forEach(item => {
-                    if (appState.missingEquipment[item]) {
-                        appState.missingEquipment[item]--;
-                        if (appState.missingEquipment[item] <= 0) {
-                            delete appState.missingEquipment[item];
-                        }
-                    }
-                });
-                
-                // Restore as current position
-                appState.currentPositionId = lastAction.positionId;
-                appState.selectedRating = null;
-                saveState();
-                updateEquipmentList();
-                
-                const pos = positions.find(p => p.id === lastAction.positionId);
-                if (pos) {
-                    displayPosition(pos);
-                }
-            }
-            
-            alert('Last action undone!');
-        }
+function renderNextBox(){
+  nextBox.textContent = state.pending ? `Next destination: ${state.pending}!` : "Next destination: —";
+  latestBox.textContent = state.history.length ? state.history[state.history.length-1] : "—";
+}
 
-        function confirmReset() {
-            if (confirm('Are you sure you want to reset ALL data? This cannot be undone!')) {
-                if (confirm('Really sure? All your progress will be lost!')) {
-                    resetAll();
-                }
-            }
-        }
+function renderInsertPos(){
+  const n = state.ranked.length;
+  insertPos.innerHTML = "";
+  for (let i=1; i<=n+1; i++){
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = `#${i}`;
+    insertPos.appendChild(opt);
+  }
+}
 
-        function resetAll() {
-            appState = {
-                completed: [],
-                liked: [],
-                disliked: [],
-                favorited: [],
-                removed: [],
-                missingEquipment: {},
-                currentPositionId: null,
-                selectedRating: null,
-                history: []
-            };
-            saveState();
-            updateStats();
-            updateEquipmentList();
-            resetView();
-            alert('All data has been reset!');
-        }
+function maybePending(){
+  if (state.pending){
+    pendingBanner.style.display = "flex";
+    pendingBanner.textContent = `Rank this: ${state.pending}`;
+    placeBtn.disabled = false;
+    skipPendingBtn.disabled = false;
+  } else {
+    pendingBanner.style.display = "none";
+    placeBtn.disabled = true;
+    skipPendingBtn.disabled = true;
+  }
+}
 
-        async function manualSync() {
-            if (!syncEnabled) {
-                alert('Cloud sync is not configured. Using local storage only.');
-                return;
-            }
-            
-            if (!userCode) {
-                const hasCode = await promptForCode();
-                if (!hasCode) return;
-            }
-            
-            try {
-                // Upload local data
-                await syncToCloud();
-                // Then pull any updates
-                await syncFromCloud();
-                // Restore current position after sync
-                restoreCurrentPosition();
-                alert('Sync completed successfully!');
-            } catch (error) {
-                alert('Sync failed. Please try again.');
-                console.error(error);
-            }
-        }
+function renderRanking(){
+  rankingList.innerHTML = "";
+  if (state.ranked.length === 0){
+    rankingList.innerHTML = `<div class="muted" style="margin-top:10px;">No rankings yet.</div>`;
+    return;
+  }
+  state.ranked.forEach((name, idx) => {
+    const row = document.createElement("div");
+    row.className = "rank-item";
+    const left = document.createElement("div");
+    left.innerHTML = `<div class="rank-name">#${idx+1} — ${escapeHtml(name)}</div>`;
+    const actions = document.createElement("div");
+    actions.className = "rank-actions";
 
-        function changeCode() {
-            const newCode = prompt('Enter new shared code:', userCode || '');
-            if (newCode && newCode.trim()) {
-                userCode = newCode.trim();
-                localStorage.setItem('userCode', userCode);
-                syncFromCloud();
-            }
-        }
+    const up = document.createElement("button");
+    up.className = "ghost small";
+    up.textContent = "↑";
+    up.disabled = idx === 0;
+    up.onclick = () => { moveRank(idx, idx-1); };
 
-        loadPositions();
-    </script>
+    const down = document.createElement("button");
+    down.className = "ghost small";
+    down.textContent = "↓";
+    down.disabled = idx === state.ranked.length-1;
+    down.onclick = () => { moveRank(idx, idx+1); };
+
+    actions.appendChild(up);
+    actions.appendChild(down);
+    row.appendChild(left);
+    row.appendChild(actions);
+    rankingList.appendChild(row);
+  });
+}
+
+function moveRank(from, to){
+  const item = state.ranked.splice(from,1)[0];
+  state.ranked.splice(to,0,item);
+  saveState();
+  renderAll();
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+let isSpinning = false;
+
+spinBtn.onclick = () => {
+  if (isSpinning || state.remaining.length === 0) return;
+  isSpinning = true;
+  renderAll();
+
+  const spins = 4 + Math.random() * 4;
+  const randomOffset = Math.random() * (Math.PI*2);
+  const start = state.wheelAngle;
+  const target = start + spins*(Math.PI*2) + randomOffset;
+
+  const duration = 1900 + Math.random()*800;
+  const t0 = performance.now();
+
+  function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+  function frame(now){
+    const t = Math.min(1, (now - t0) / duration);
+    const eased = easeOutCubic(t);
+    state.wheelAngle = start + (target - start) * eased;
+    drawWheel();
+    if (t < 1){
+      requestAnimationFrame(frame);
+    } else {
+      const picked = pickSelectedByPointer();
+      if (picked){
+        const selected = picked.name;
+        state.remaining.splice(picked.idx, 1);
+        state.history.push(selected);
+        state.pending = selected;
+        log(`Picked: ${selected}`);
+        saveState();
+      }
+      isSpinning = false;
+      renderAll();
+    }
+  }
+  requestAnimationFrame(frame);
+};
+
+undoBtn.onclick = () => {
+  if (state.history.length === 0) return;
+  const last = state.history.pop();
+  if (state.pending === last) state.pending = null;
+  const rankedIdx = state.ranked.indexOf(last);
+  if (rankedIdx !== -1) {
+    state.ranked.splice(rankedIdx, 1);
+  }
+  if (!state.remaining.includes(last)) {
+    state.remaining.push(last);
+  }
+  log(`Undo: ${last}`);
+  saveState();
+  renderAll();
+};
+
+async function doReset(){
+  if (!confirm("Reset everything?")) return;
+  state = freshState();
+  log('Reset to fresh state');
+  saveState();
+  renderAll();
+}
+resetBtn.onclick = doReset;
+resetBtn2.onclick = doReset;
+
+placeBtn.onclick = () => {
+  if (!state.pending) return;
+  const pos = Math.max(1, Math.min(state.ranked.length+1, Number(insertPos.value || state.ranked.length+1)));
+  const name = state.pending;
+  state.ranked.splice(pos-1, 0, name);
+  state.pending = null;
+  log(`Placed ${name} at #${pos}`);
+  saveState();
+  renderAll();
+};
+
+skipPendingBtn.onclick = () => {
+  if (!state.pending) return;
+  
+  const skipped = state.pending;
+  log(`Skipping: ${skipped}`);
+  
+  // Add back to remaining
+  if (!state.remaining.includes(skipped)) {
+    state.remaining.push(skipped);
+  }
+  
+  // Remove from history
+  const historyIdx = state.history.lastIndexOf(skipped);
+  if (historyIdx !== -1) {
+    state.history.splice(historyIdx, 1);
+  }
+  
+  state.pending = null;
+  saveState();
+  renderAll();
+};
+
+function renderAll(){
+  drawWheel();
+  updateCounts();
+  renderNextBox();
+  renderInsertPos();
+  maybePending();
+  renderRanking();
+  undoBtn.disabled = state.history.length === 0;
+  spinBtn.disabled = isSpinning || state.remaining.length === 0;
+}
+
+// ==========================================
+// INIT
+// ==========================================
+async function init() {
+  log('App initializing...');
+  
+  if (promptForCode()) {
+    const loaded = await syncFromCloud();
+    if (!loaded) {
+      log('No cloud data, will sync on first action');
+    }
+  }
+  
+  renderAll();
+  log('App ready');
+}
+
+init();
+</script>
 </body>
 </html>
