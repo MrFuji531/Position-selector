@@ -3,713 +3,837 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Position Explorer</title>
+    <title>Positions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-deep: #0f0e0e;
+            --bg-card: #1a1918;
+            --bg-card-hover: #222120;
+            --bg-surface: #2a2827;
+            --accent: #d4a053;
+            --accent-glow: #d4a05340;
+            --accent-soft: #d4a05320;
+            --rose: #c97b7b;
+            --rose-soft: #c97b7b25;
+            --green: #7bc985;
+            --green-soft: #7bc98525;
+            --red: #c97b7b;
+            --text-primary: #e8e0d6;
+            --text-secondary: #9a9089;
+            --text-muted: #5a544e;
+            --border: #2a2827;
+            --border-light: #3a3837;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.4);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .container {
-            max-width: 500px;
+        /* Subtle texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            max-width: 480px;
             margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .progress-container {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            height: 30px;
+            padding: 20px 16px 100px;
             position: relative;
-            margin-bottom: 10px;
-        }
-
-        .progress-fill {
-            background: linear-gradient(90deg, #4CAF50, #81C784);
-            height: 100%;
-            transition: width 0.3s ease;
-            border-radius: 10px;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
             z-index: 1;
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            color: white;
-            font-size: 14px;
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            padding: 24px 0 20px;
+            position: relative;
         }
 
-        .stat {
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .sync-indicator {
+            position: absolute;
+            top: 28px;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            transition: var(--transition);
+            opacity: 0.7;
+        }
+
+        .sync-indicator.syncing {
+            background: var(--accent);
+            animation: pulse 1s ease infinite;
+        }
+
+        .sync-indicator.error {
+            background: var(--red);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: var(--bg-surface);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #e8c47a);
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -1px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e8c47a;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .stat-item {
             text-align: center;
         }
 
         .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            display: block;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
         }
 
         .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .position-card {
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .position-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #667eea;
-        }
-
-        .position-difficulty {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 15px;
+            font-size: 10px;
             text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
 
-        .difficulty-beginner {
-            background: #C8E6C9;
-            color: #2E7D32;
-        }
-
-        .difficulty-intermediate {
-            background: #FFF9C4;
-            color: #F57F17;
-        }
-
-        .difficulty-advanced {
-            background: #FFCDD2;
-            color: #C62828;
-        }
-
-        .position-image {
-            width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            background: #f8f8f8;
-        }
-
-        .position-description {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            flex-grow: 1;
-        }
-
-        .tags-container {
-            margin-bottom: 20px;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #f0f0f0;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin: 3px;
-            color: #666;
-        }
-
-        .tag.toy {
-            background: #E1BEE7;
-            color: #6A1B9A;
-        }
-
-        .tag.bondage {
-            background: #FFCCBC;
-            color: #D84315;
-        }
-
-        .equipment-list {
-            background: #FFF3E0;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .equipment-list h4 {
-            color: #E65100;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .equipment-list ul {
-            list-style: none;
-        }
-
-        .equipment-list li {
-            color: #666;
-            padding: 5px 0;
-            font-size: 14px;
-        }
-
-        .equipment-list li:before {
-            content: "• ";
-            color: #E65100;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-success {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #FF9800;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #9E9E9E;
-            color: white;
-        }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .btn-small {
-            padding: 10px 15px;
-            font-size: 14px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: #666;
-        }
-
+        /* ===== NAV ===== */
         .nav {
             display: flex;
-            background: white;
-            border-radius: 15px;
-            padding: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 16px;
         }
 
         .nav-btn {
             flex: 1;
-            padding: 12px;
+            padding: 10px 8px;
             background: transparent;
             border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            color: #999;
+            border-radius: var(--radius-xs);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            letter-spacing: 0.02em;
         }
+
+        .nav-btn:hover { color: var(--text-secondary); }
 
         .nav-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--accent);
+            color: var(--bg-deep);
+            font-weight: 600;
         }
 
-        .tab-content {
-            display: none;
+        /* ===== TABS ===== */
+        .tab { display: none; }
+        .tab.active { display: block; }
+
+        /* ===== POSITION CARD ===== */
+        .position-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 12px;
+            animation: cardIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .tab-content.active {
-            display: block;
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .equipment-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+        .position-image-wrap {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: var(--bg-surface);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .position-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: var(--bg-surface);
+        }
+
+        .position-body {
+            padding: 20px;
+        }
+
+        .position-meta {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
-        .equipment-name {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .equipment-count {
-            background: #667eea;
-            color: white;
-            padding: 5px 15px;
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
 
-        .top-actions {
+        .badge-beginner { background: #7bc98520; color: #7bc985; }
+        .badge-intermediate { background: #d4a05325; color: #d4a053; }
+        .badge-advanced { background: #c97b7b25; color: #c97b7b; }
+        .badge-toy { background: #b07bc920; color: #b07bc9; }
+        .badge-bondage { background: #c9997b20; color: #c9997b; }
+
+        .position-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .position-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .equipment-box {
+            margin-top: 14px;
+            padding: 12px;
+            background: var(--bg-surface);
+            border-radius: var(--radius-xs);
+            border-left: 3px solid var(--accent);
+        }
+
+        .equipment-box-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .equipment-box li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 2px 0;
+            list-style: none;
+        }
+
+        .equipment-box li::before {
+            content: '→ ';
+            color: var(--accent);
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+
+        .empty-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .empty-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.02em;
         }
 
-        .top-actions button {
-            flex: 1;
+        .btn:active { transform: scale(0.97); }
+
+        .btn-accent {
+            background: var(--accent);
+            color: var(--bg-deep);
+        }
+
+        .btn-accent:hover {
+            background: #e0ad5e;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-green { background: var(--green-soft); color: var(--green); border: 1px solid #7bc98530; }
+        .btn-green:hover { background: #7bc98535; }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover { border-color: var(--border-light); color: var(--text-primary); }
+
+        .btn-danger { background: var(--rose-soft); color: var(--rose); border: 1px solid #c97b7b30; }
+        .btn-danger:hover { background: #c97b7b35; }
+
+        .btn-warn { background: #d4a05315; color: var(--accent); border: 1px solid #d4a05330; }
+        .btn-warn:hover { background: #d4a05325; }
+
+        .action-grid {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .action-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        .btn-sm {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        /* ===== RATING ===== */
+        .rating-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px;
+            animation: cardIn 0.3s ease;
+        }
+
+        .rating-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
         }
 
         .rating-buttons {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
-            margin-top: 15px;
+            margin-bottom: 14px;
         }
 
         .rating-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 15px;
-            font-size: 24px;
+            padding: 16px;
+            background: var(--bg-surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 28px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
 
-        .rating-btn:hover {
-            transform: scale(1.1);
+        .rating-btn span {
+            font-size: 11px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
+
+        .rating-btn:hover { border-color: var(--border-light); background: var(--bg-card-hover); }
 
         .rating-btn.selected {
-            border-color: #667eea;
-            background: #f0f0ff;
+            border-color: var(--accent);
+            background: var(--accent-soft);
         }
 
-        .position-list-item {
-            background: #f8f8f8;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
+        .rating-btn.selected span { color: var(--accent); }
+
+        /* ===== EQUIPMENT TAB ===== */
+        .equip-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
         }
 
-        .position-list-name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-
-        .position-list-description {
-            color: #666;
+        .equip-name {
+            font-weight: 500;
             font-size: 14px;
+        }
+
+        .equip-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .equip-count {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .equip-got-btn {
+            padding: 6px 14px;
+            background: var(--green-soft);
+            color: var(--green);
+            border: 1px solid #7bc98530;
+            border-radius: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .equip-got-btn:hover { background: #7bc98535; }
+
+        /* ===== STATS TAB ===== */
+        .stats-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .stats-card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .stats-tile {
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        .stats-tile-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stats-tile-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+
+        .pos-list-item {
+            padding: 12px;
+            border-left: 3px solid var(--accent);
+            background: var(--bg-surface);
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+            margin-bottom: 8px;
+        }
+
+        .pos-list-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .pos-list-desc {
+            font-size: 12px;
+            color: var(--text-muted);
             line-height: 1.4;
         }
 
-        .position-list-tags {
-            margin-top: 8px;
+        .pos-list-tags {
+            margin-top: 6px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
         }
 
+        .pos-list-tags .badge { font-size: 9px; padding: 2px 8px; }
+
+        /* ===== UTILITY BAR ===== */
+        .utility-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .utility-bar .btn { flex: 1; }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow);
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== HIDDEN ===== */
+        .hidden { display: none !important; }
+
+        /* ===== CONFIRM OVERLAY ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .overlay-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 340px;
+            width: 100%;
+            animation: cardIn 0.3s ease;
+        }
+
+        .overlay-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .overlay-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .overlay-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .overlay-actions .btn { flex: 1; }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-
-            .header h1 {
-                font-size: 24px;
-            }
-
-            .position-name {
-                font-size: 20px;
-            }
-
-            .btn-group {
-                grid-template-columns: 1fr;
-            }
+            .app { padding: 12px 12px 100px; }
+            .header h1 { font-size: 26px; }
+            .position-name { font-size: 22px; }
+            .stats-grid { gap: 4px; }
+            .stat-value { font-size: 24px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="app">
+        <header class="header">
             <h1>Positions</h1>
-        </div>
+            <div class="sync-indicator" id="syncIndicator" title="Sync status"></div>
+        </header>
 
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-                <div class="progress-text" id="progressText">0%</div>
+        <!-- Progress -->
+        <div class="progress-section">
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressFill" style="width: 0%"></div>
             </div>
-            <div class="stats">
-                <div class="stat">
-                    <span class="stat-value" id="completedCount">0</span>
-                    <span class="stat-label">Completed</span>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-label">Done</div>
                 </div>
-                <div class="stat">
-                    <span class="stat-value" id="favoritesCount">0</span>
-                    <span class="stat-label">❤️ Favorites</span>
+                <div class="stat-item">
+                    <div class="stat-value" id="favoritesCount">0</div>
+                    <div class="stat-label">❤️ Fav</div>
                 </div>
-                <div class="stat">
-                    <span class="stat-value" id="likedCount">0</span>
-                    <span class="stat-label">👍 Liked</span>
+                <div class="stat-item">
+                    <div class="stat-value" id="likedCount">0</div>
+                    <div class="stat-label">👍 Liked</div>
                 </div>
-                <div class="stat">
-                    <span class="stat-value" id="remainingCount">208</span>
-                    <span class="stat-label">Remaining</span>
+                <div class="stat-item">
+                    <div class="stat-value" id="remainingCount">0</div>
+                    <div class="stat-label">Left</div>
                 </div>
             </div>
         </div>
 
-        <div class="top-actions">
-            <button class="btn btn-secondary btn-small" onclick="undoLastAction()">↩️ Undo</button>
-            <button class="btn btn-secondary btn-small" onclick="manualSync()" id="syncBtn">🔄 Sync Now</button>
-            <button class="btn btn-danger btn-small" onclick="confirmReset()">🔄 Reset All</button>
+        <!-- Nav -->
+        <nav class="nav">
+            <button class="nav-btn active" data-tab="positions">Explore</button>
+            <button class="nav-btn" data-tab="equipment">Equipment</button>
+            <button class="nav-btn" data-tab="stats">Stats</button>
+        </nav>
+
+        <!-- Utility bar -->
+        <div class="utility-bar">
+            <button class="btn btn-ghost btn-sm" onclick="undoLastAction()">↩ Undo</button>
+            <button class="btn btn-ghost btn-sm" onclick="showResetConfirm()">Reset</button>
         </div>
 
-        <div class="nav">
-            <button class="nav-btn active" onclick="switchTab('positions')">Positions</button>
-            <button class="nav-btn" onclick="switchTab('equipment')">Equipment</button>
-            <button class="nav-btn" onclick="switchTab('stats')">Stats</button>
-        </div>
-
-        <!-- Positions Tab -->
-        <div id="positionsTab" class="tab-content active">
+        <!-- POSITIONS TAB -->
+        <div class="tab active" id="tab-positions">
+            <!-- Suggest view -->
             <div id="suggestView">
-                <div class="card">
+                <div class="position-card">
                     <div class="empty-state">
-                        <div class="empty-state-icon">🎯</div>
+                        <div class="empty-icon">✦</div>
+                        <div class="empty-title">What's our next position??</div>
+                        <div class="empty-sub">You're hot</div>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="suggestPosition()">Suggest Position</button>
+                <button class="btn btn-accent" onclick="suggestPosition()">Suggest a Position</button>
             </div>
 
+            <!-- Position view -->
             <div id="positionView" class="hidden">
-                <div class="card position-card">
-                    <h2 class="position-name" id="positionName"></h2>
-                    <span class="position-difficulty" id="positionDifficulty"></span>
-                    <div class="tags-container" id="tagsContainer"></div>
-                    <img id="positionImage" class="position-image hidden" alt="Position illustration">
-                    <div id="equipmentNeeded" class="hidden equipment-list">
-                        <h4>Equipment Needed:</h4>
-                        <ul id="equipmentList"></ul>
+                <div class="position-card">
+                    <div class="position-image-wrap" id="imageWrap" style="display:none;">
+                        <img id="positionImage" alt="">
                     </div>
-                    <p class="position-description" id="positionDescription"></p>
-                </div>
-
-                <button class="btn btn-success" onclick="showRatingOptions()">✅ Complete</button>
-                
-                <div id="ratingOptions" class="hidden">
-                    <div class="card">
-                        <h3 style="margin-bottom: 15px; text-align: center;">How was it?</h3>
-                        <div class="rating-buttons">
-                            <button class="rating-btn" onclick="selectRating('dislike')" id="dislikeBtn">👎</button>
-                            <button class="rating-btn" onclick="selectRating('like')" id="likeBtn">👍</button>
-                            <button class="rating-btn" onclick="selectRating('favorite')" id="favoriteBtn">❤️</button>
+                    <div class="position-body">
+                        <div class="position-meta" id="metaContainer"></div>
+                        <h2 class="position-name" id="positionName"></h2>
+                        <p class="position-desc" id="positionDesc"></p>
+                        <div id="equipmentNeeded" class="hidden">
+                            <div class="equipment-box">
+                                <div class="equipment-box-title">Equipment Needed</div>
+                                <ul id="equipmentList"></ul>
+                            </div>
                         </div>
-                        <button class="btn btn-primary" onclick="completePosition()" style="margin-top: 15px;">Save Rating</button>
                     </div>
                 </div>
 
-                <div class="btn-group">
-                    <button class="btn btn-warning btn-small" onclick="dontHaveEquipment()">🚫 don't have the toys needed yet!</button>
-                    <button class="btn btn-danger btn-small" onclick="dontWantToDo()">❌ Don't Want to try</button>
-                    <button class="btn btn-secondary btn-small" onclick="skipPosition()">⏭️ Skip</button>
+                <button class="btn btn-green" onclick="showRating()" style="margin-bottom:8px">✓ Complete</button>
+
+                <div id="ratingSection" class="hidden">
+                    <div class="rating-card">
+                        <div class="rating-title">How was it?</div>
+                        <div class="rating-buttons">
+                            <button class="rating-btn" data-rating="dislike" onclick="selectRating('dislike')">
+                                👎<span>Booo</span>
+                            </button>
+                            <button class="rating-btn" data-rating="like" onclick="selectRating('like')">
+                                👍<span>Good</span>
+                            </button>
+                            <button class="rating-btn" data-rating="favorite" onclick="selectRating('favorite')">
+                                ❤️<span>Loved</span>
+                            </button>
+                        </div>
+                        <button class="btn btn-accent" onclick="completePosition()">Save</button>
+                    </div>
+                </div>
+
+                <div class="action-grid action-grid-3">
+                    <button class="btn btn-warn btn-sm" onclick="dontHaveEquipment()">🚫 No toys</button>
+                    <button class="btn btn-danger btn-sm" onclick="showRemoveConfirm()">✕ Remove</button>
+                    <button class="btn btn-ghost btn-sm" onclick="skipPosition()">Skip →</button>
                 </div>
             </div>
         </div>
 
-        <!-- Equipment Tab -->
-        <div id="equipmentTab" class="tab-content">
-            <div class="card">
-                <h3 style="margin-bottom: 20px;">Missing Equipment</h3>
-                <div id="equipmentListContainer">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">✅</div>
-                        <h3>All set!</h3>
-                        <p>No missing equipment yet</p>
-                    </div>
-                </div>
-            </div>
+        <!-- EQUIPMENT TAB -->
+        <div class="tab" id="tab-equipment">
+            <div id="equipmentListContainer"></div>
         </div>
 
-        <!-- Stats Tab -->
-        <div id="statsTab" class="tab-content">
-            <div class="card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 20px;">📊 Our Statistics</h3>
-                <div class="stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                    <div class="stat" style="background: #E8F5E9; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #2E7D32;" id="statsLikedCount">0</span>
-                        <span class="stat-label" style="color: #2E7D32;">👍 Liked</span>
+        <!-- STATS TAB -->
+        <div class="tab" id="tab-stats">
+            <div class="stats-card">
+                <div class="stats-card-title">Overview</div>
+                <div class="stats-overview">
+                    <div class="stats-tile" style="background:var(--green-soft)">
+                        <div class="stats-tile-value" style="color:var(--green)" id="sLiked">0</div>
+                        <div class="stats-tile-label" style="color:var(--green)">👍 Liked</div>
                     </div>
-                    <div class="stat" style="background: #FFEBEE; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #C62828;" id="statsDislikedCount">0</span>
-                        <span class="stat-label" style="color: #C62828;">👎 Disliked (booo)</span>
+                    <div class="stats-tile" style="background:var(--rose-soft)">
+                        <div class="stats-tile-value" style="color:var(--rose)" id="sDisliked">0</div>
+                        <div class="stats-tile-label" style="color:var(--rose)">👎 Disliked</div>
                     </div>
-                    <div class="stat" style="background: #FCE4EC; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #880E4F;" id="statsFavoritedCount">0</span>
-                        <span class="stat-label" style="color: #880E4F;">❤️ Favorites</span>
+                    <div class="stats-tile" style="background:#c97b7b15">
+                        <div class="stats-tile-value" style="color:#e8a0a0" id="sFavorited">0</div>
+                        <div class="stats-tile-label" style="color:#e8a0a0">❤️ Favorites</div>
                     </div>
-                    <div class="stat" style="background: #F3E5F5; padding: 15px; border-radius: 10px;">
-                        <span class="stat-value" style="color: #4A148C;" id="statsRemovedCount">0</span>
-                        <span class="stat-label" style="color: #4A148C;">❌ Removed</span>
+                    <div class="stats-tile" style="background:var(--accent-soft)">
+                        <div class="stats-tile-value" style="color:var(--accent)" id="sRemoved">0</div>
+                        <div class="stats-tile-label" style="color:var(--accent)">✕ Removed</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Favorites -->
-            <div class="card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 15px; color: #880E4F;">❤️ Favorite Positions</h3>
+            <div class="stats-card">
+                <div class="stats-card-title" style="color:#e8a0a0">❤️ Favorites</div>
                 <div id="favoritesList"></div>
             </div>
 
-            <!-- Liked -->
-            <div class="card" style="margin-bottom: 20px;">
-                <h3 style="margin-bottom: 15px; color: #2E7D32;">👍 Liked Positions</h3>
+            <div class="stats-card">
+                <div class="stats-card-title" style="color:var(--green)">👍 Liked</div>
                 <div id="likedList"></div>
             </div>
 
-            <!-- Disliked -->
-            <div class="card">
-                <h3 style="margin-bottom: 15px; color: #C62828;">👎 Disliked Positions</h3>
+            <div class="stats-card">
+                <div class="stats-card-title" style="color:var(--rose)">👎 Disliked</div>
                 <div id="dislikedList"></div>
             </div>
         </div>
     </div>
 
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Overlays rendered dynamically -->
+    <div id="overlayContainer"></div>
+
     <script>
         // ==========================================
-        // SUPABASE CONFIGURATION
+        // SUPABASE CONFIG
         // ==========================================
         const SUPABASE_URL = 'https://dgbbloirhopjkpnckrdp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmJsb2lyaG9wamtwbmNrcmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTcwMzYsImV4cCI6MjA4MzM3MzAzNn0.iVWe7_wVqvQjCIG70Jr9qka_Gn1WeFlRxsIjIvd0Ayg';
-
-        // Supabase client setup
-        let supabaseClient = null;
-        let userCode = null;
-        let syncEnabled = false;
-
-        function initSupabase() {
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
-                console.log('Supabase not configured - using localStorage only');
-                return;
-            }
-            
-            // Simple fetch-based Supabase client
-            supabaseClient = {
-                url: SUPABASE_URL,
-                key: SUPABASE_ANON_KEY,
-                
-                async query(sql, params = []) {
-                    const response = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': this.key,
-                            'Authorization': `Bearer ${this.key}`,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ query: sql, params })
-                    });
-                    return response.json();
-                },
-                
-                async getData(code) {
-                    const response = await fetch(`${this.url}/rest/v1/position_data?code=eq.${code}`, {
-                        method: 'GET',
-                        headers: {
-                            'apikey': this.key,
-                            'Authorization': `Bearer ${this.key}`,
-                        }
-                    });
-                    const data = await response.json();
-                    return data.length > 0 ? data[0] : null;
-                },
-                
-                async upsertData(code, stateData) {
-                    const response = await fetch(`${this.url}/rest/v1/position_data`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': this.key,
-                            'Authorization': `Bearer ${this.key}`,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'resolution=merge-duplicates'
-                        },
-                        body: JSON.stringify({
-                            code: code,
-                            data: stateData,
-                            updated_at: new Date().toISOString()
-                        })
-                    });
-                    return response.ok;
-                }
-            };
-            
-            syncEnabled = true;
-        }
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmJsb2lyaG9wamtwbmNrcmRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTcwMzYsImV4cCI6MjA4MzM3MzAzNn0.iVWe7_wVqvQjCIG70Jr9qka_Gn1WeFlRxsIjIvd0Ayg';
+        const USER_CODE = 'HiLeeImTalkingToYouThroughCode';
 
         // ==========================================
-        // SYNC FUNCTIONS
+        // STATE
         // ==========================================
-        
-        async function promptForCode() {
-            const savedCode = localStorage.getItem('userCode');
-            if (savedCode) {
-                userCode = savedCode;
-                return true;
-            }
-            
-            const code = prompt('Enter your shared code to sync data across devices:');
-            if (code && code.trim()) {
-                userCode = code.trim();
-                localStorage.setItem('userCode', userCode);
-                return true;
-            }
-            return false;
-        }
-
-        async function syncToCloud() {
-            if (!syncEnabled || !userCode || !supabaseClient) return;
-            
-            try {
-                await supabaseClient.upsertData(userCode, appState);
-                console.log('Synced to cloud successfully');
-            } catch (error) {
-                console.error('Sync error:', error);
-            }
-        }
-
-        async function syncFromCloud() {
-            if (!syncEnabled || !userCode || !supabaseClient) return;
-            
-            try {
-                const cloudData = await supabaseClient.getData(userCode);
-                if (cloudData && cloudData.data) {
-                    // Merge cloud data with local data (cloud takes precedence)
-                    appState = { ...appState, ...cloudData.data };
-                    saveStateLocal(); // Save merged data to localStorage without triggering cloud sync
-                    updateStats();
-                    console.log('Synced from cloud successfully');
-                    return true;
-                }
-            } catch (error) {
-                console.error('Sync from cloud error:', error);
-            }
-            return false;
-        }
-
-        async function uploadLocalData() {
-            if (!syncEnabled || !userCode) return;
-            
-            // Upload current localStorage data to cloud
-            await syncToCloud();
-            alert('Your progress has been uploaded to the cloud!');
-        }
-
-        // ==========================================
-        // EXISTING CODE
-        // ==========================================
-        
         let positions = [];
         let appState = {
             completed: [],
@@ -718,56 +842,166 @@
             favorited: [],
             removed: [],
             missingEquipment: {},
-            currentPositionId: null,  // Store only the ID for persistence
+            currentPositionId: null,
             selectedRating: null,
             history: []
         };
 
-        async function loadPositions() {
-            try {
-                const response = await fetch('sex_positions_comprehensive.json');
-                const data = await response.json();
-                positions = data.positions;
-                
-                // Initialize Supabase
-                initSupabase();
-                
-                // Load local state first
-                loadState();
-                
-                // If sync is enabled, try to sync from cloud
-                if (syncEnabled) {
-                    const hasCode = await promptForCode();
-                    if (hasCode) {
-                        const synced = await syncFromCloud();
-                        if (!synced) {
-                            // No cloud data found, upload local data
-                            await uploadLocalData();
-                        }
-                    }
+        let syncTimeout = null;
+        let isSyncing = false;
+
+        // ==========================================
+        // SUPABASE SYNC (bulletproof)
+        // ==========================================
+        const supabase = {
+            headers() {
+                return {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json'
+                };
+            },
+
+            async fetch(stateData) {
+                try {
+                    const res = await window.fetch(
+                        `${SUPABASE_URL}/rest/v1/position_data?code=eq.${USER_CODE}&select=data,updated_at`,
+                        { method: 'GET', headers: this.headers() }
+                    );
+                    if (!res.ok) throw new Error(`GET ${res.status}`);
+                    const rows = await res.json();
+                    return rows.length > 0 ? rows[0] : null;
+                } catch (e) {
+                    console.error('Supabase fetch error:', e);
+                    return null;
                 }
-                
-                // Restore the current position if one was saved
-                restoreCurrentPosition();
-                
-                updateStats();
-            } catch (error) {
-                console.error('Error loading positions:', error);
-                alert('Error loading data. Please make sure sex_positions_comprehensive.json is in the same folder.');
+            },
+
+            async save(stateData) {
+                try {
+                    // Use PATCH (update) if row exists, POST (insert) if not
+                    // First try PATCH
+                    const patchRes = await window.fetch(
+                        `${SUPABASE_URL}/rest/v1/position_data?code=eq.${USER_CODE}`,
+                        {
+                            method: 'PATCH',
+                            headers: { ...this.headers(), 'Prefer': 'return=minimal' },
+                            body: JSON.stringify({
+                                data: stateData,
+                                updated_at: new Date().toISOString()
+                            })
+                        }
+                    );
+
+                    // If PATCH returned 404 or updated 0 rows, INSERT instead
+                    if (!patchRes.ok) {
+                        const insertRes = await window.fetch(
+                            `${SUPABASE_URL}/rest/v1/position_data`,
+                            {
+                                method: 'POST',
+                                headers: { ...this.headers(), 'Prefer': 'return=minimal' },
+                                body: JSON.stringify({
+                                    code: USER_CODE,
+                                    data: stateData,
+                                    updated_at: new Date().toISOString()
+                                })
+                            }
+                        );
+                        if (!insertRes.ok) throw new Error(`INSERT ${insertRes.status}`);
+                    }
+
+                    return true;
+                } catch (e) {
+                    console.error('Supabase save error:', e);
+                    return false;
+                }
             }
+        };
+
+        function setSyncStatus(status) {
+            const el = document.getElementById('syncIndicator');
+            el.className = 'sync-indicator' + (status !== 'ok' ? ' ' + status : '');
         }
 
-        // Restore the current position from saved state
-        function restoreCurrentPosition() {
+        // Debounced auto-sync: saves 600ms after last state change
+        function scheduleSave() {
+            // Always save to localStorage immediately
+            localStorage.setItem('positionExplorerState', JSON.stringify(appState));
+
+            // Debounce cloud sync
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(async () => {
+                if (isSyncing) return;
+                isSyncing = true;
+                setSyncStatus('syncing');
+
+                const ok = await supabase.save(appState);
+                setSyncStatus(ok ? 'ok' : 'error');
+                if (ok) console.log('☁️ Synced');
+                else console.warn('☁️ Sync failed');
+
+                isSyncing = false;
+            }, 600);
+        }
+
+        function saveState() {
+            scheduleSave();
+        }
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        async function init() {
+            try {
+                // Load positions JSON
+                const res = await fetch('sex_positions_comprehensive.json');
+                const data = await res.json();
+                positions = data.positions;
+            } catch (e) {
+                console.error('Failed to load positions JSON:', e);
+                toast('Error loading positions data');
+                return;
+            }
+
+            // Load local state
+            const local = localStorage.getItem('positionExplorerState');
+            if (local) {
+                try {
+                    const parsed = JSON.parse(local);
+                    appState = { ...appState, ...parsed };
+                    // Migration cleanup
+                    delete appState.currentPosition;
+                    delete appState.isPositionShown;
+                } catch (e) {}
+            }
+
+            // Try to load from cloud (cloud takes precedence)
+            setSyncStatus('syncing');
+            const cloud = await supabase.fetch();
+            if (cloud && cloud.data) {
+                // Cloud data exists - use it, it's the source of truth
+                const cloudState = cloud.data;
+                // Merge: cloud wins for arrays/objects, keep local for anything cloud doesn't have
+                appState = { ...appState, ...cloudState };
+                localStorage.setItem('positionExplorerState', JSON.stringify(appState));
+                console.log('☁️ Loaded from cloud');
+                setSyncStatus('ok');
+            } else if (local) {
+                // No cloud data but have local - push local to cloud
+                const ok = await supabase.save(appState);
+                setSyncStatus(ok ? 'ok' : 'error');
+                console.log('☁️ Pushed local to cloud');
+            } else {
+                setSyncStatus('ok');
+            }
+
+            // Restore UI
+            updateStats();
             if (appState.currentPositionId) {
-                // Find the position by ID
                 const pos = positions.find(p => p.id === appState.currentPositionId);
-                
-                // Check if this position is still valid (not completed or removed)
                 if (pos && !appState.completed.includes(pos.id) && !appState.removed.includes(pos.id)) {
                     displayPosition(pos);
                 } else {
-                    // Position was completed/removed or not found, clear it
                     appState.currentPositionId = null;
                     appState.selectedRating = null;
                     saveState();
@@ -775,51 +1009,31 @@
             }
         }
 
-        // Save to localStorage only (without cloud sync)
-        function saveStateLocal() {
-            localStorage.setItem('positionExplorerState', JSON.stringify(appState));
-        }
+        // ==========================================
+        // NAV
+        // ==========================================
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
 
-        function saveState() {
-            localStorage.setItem('positionExplorerState', JSON.stringify(appState));
-            // Auto-sync to cloud after saving
-            if (syncEnabled) {
-                syncToCloud();
-            }
-        }
+                if (btn.dataset.tab === 'equipment') updateEquipmentList();
+                if (btn.dataset.tab === 'stats') updateStatsTab();
+            });
+        });
 
-        function loadState() {
-            const saved = localStorage.getItem('positionExplorerState');
-            if (saved) {
-                const loadedState = JSON.parse(saved);
-                // Merge with default state to ensure all properties exist
-                appState = { ...appState, ...loadedState };
-                
-                // Migration: convert old currentPosition object to currentPositionId
-                if (loadedState.currentPosition && !loadedState.currentPositionId) {
-                    appState.currentPositionId = loadedState.currentPosition.id;
-                }
-                // Migration: convert old isPositionShown to currentPositionId presence
-                if (loadedState.isPositionShown === false) {
-                    appState.currentPositionId = null;
-                }
-                // Clean up old properties
-                delete appState.currentPosition;
-                delete appState.isPositionShown;
-            }
-        }
-
+        // ==========================================
+        // POSITION LOGIC
+        // ==========================================
         function getAvailablePositions() {
             return positions.filter(pos => {
-                if (appState.completed.includes(pos.id) || appState.removed.includes(pos.id)) {
-                    return false;
-                }
+                if (appState.completed.includes(pos.id) || appState.removed.includes(pos.id)) return false;
                 if (pos.toy || pos.bondage) {
                     const required = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
-                    for (let equipment of required) {
-                        if (appState.missingEquipment[equipment]) {
-                            return false;
-                        }
+                    for (const eq of required) {
+                        if (appState.missingEquipment[eq]) return false;
                     }
                 }
                 return true;
@@ -829,105 +1043,94 @@
         function suggestPosition() {
             const available = getAvailablePositions();
             if (available.length === 0) {
-                alert('No more positions available! Check your missing equipment or reset to start over.');
+                toast('No more positions! Check equipment or reset.');
                 return;
             }
-            const randomPos = available[Math.floor(Math.random() * available.length)];
-            
-            // Save action to history for undo
+            const pos = available[Math.floor(Math.random() * available.length)];
+
             appState.history.push({
                 action: 'suggest',
-                positionId: randomPos.id,
-                previousPositionId: appState.currentPositionId // Store previous state for proper undo
+                positionId: pos.id,
+                previousPositionId: appState.currentPositionId
             });
-            
-            // Save the position ID (persists across refreshes)
-            appState.currentPositionId = randomPos.id;
+            appState.currentPositionId = pos.id;
             appState.selectedRating = null;
             saveState();
-            
-            displayPosition(randomPos);
+            displayPosition(pos);
         }
 
         function displayPosition(pos) {
             document.getElementById('suggestView').classList.add('hidden');
             document.getElementById('positionView').classList.remove('hidden');
-            document.getElementById('ratingOptions').classList.add('hidden');
+            document.getElementById('ratingSection').classList.add('hidden');
 
             document.getElementById('positionName').textContent = pos.name;
-            document.getElementById('positionDescription').textContent = pos.description;
-            
-            const difficultyEl = document.getElementById('positionDifficulty');
-            difficultyEl.textContent = pos.difficulty;
-            difficultyEl.className = 'position-difficulty difficulty-' + pos.difficulty;
+            document.getElementById('positionDesc').textContent = pos.description;
 
-            const imageEl = document.getElementById('positionImage');
+            // Image
+            const imgWrap = document.getElementById('imageWrap');
+            const img = document.getElementById('positionImage');
             if (pos.image_file) {
-                imageEl.src = pos.image_file;
-                imageEl.classList.remove('hidden');
-                imageEl.onerror = function() {
-                    this.classList.add('hidden');
-                };
+                img.src = pos.image_file;
+                imgWrap.style.display = 'block';
+                img.onerror = () => { imgWrap.style.display = 'none'; };
             } else {
-                imageEl.classList.add('hidden');
+                imgWrap.style.display = 'none';
             }
 
-            const tagsContainer = document.getElementById('tagsContainer');
-            tagsContainer.innerHTML = '';
-            if (pos.toy) tagsContainer.innerHTML += '<span class="tag toy">🎀 Toy</span>';
-            if (pos.bondage) tagsContainer.innerHTML += '<span class="tag bondage">🔗 Bondage</span>';
+            // Meta badges
+            const meta = document.getElementById('metaContainer');
+            meta.innerHTML = `<span class="badge badge-${pos.difficulty}">${pos.difficulty}</span>`;
+            if (pos.toy) meta.innerHTML += '<span class="badge badge-toy">Toy</span>';
+            if (pos.bondage) meta.innerHTML += '<span class="badge badge-bondage">Bondage</span>';
 
-            const equipmentNeeded = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
-            if (equipmentNeeded.length > 0) {
-                document.getElementById('equipmentNeeded').classList.remove('hidden');
-                document.getElementById('equipmentList').innerHTML = equipmentNeeded.map(item => `<li>${item}</li>`).join('');
+            // Equipment
+            const equipNeeded = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
+            const equipSection = document.getElementById('equipmentNeeded');
+            if (equipNeeded.length > 0) {
+                equipSection.classList.remove('hidden');
+                document.getElementById('equipmentList').innerHTML = equipNeeded.map(e => `<li>${e}</li>`).join('');
             } else {
-                document.getElementById('equipmentNeeded').classList.add('hidden');
+                equipSection.classList.add('hidden');
             }
 
-            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+            // Reset rating selection
+            document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
         }
 
-        function showRatingOptions() {
-            document.getElementById('ratingOptions').classList.remove('hidden');
+        function showRating() {
+            document.getElementById('ratingSection').classList.remove('hidden');
         }
 
         function selectRating(rating) {
             appState.selectedRating = rating;
-            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
-            document.getElementById(rating + 'Btn').classList.add('selected');
+            document.querySelectorAll('.rating-btn').forEach(b => {
+                b.classList.toggle('selected', b.dataset.rating === rating);
+            });
         }
 
         function completePosition() {
             if (!appState.selectedRating) {
-                alert('Please select a rating first!');
+                toast('Pick a rating first!');
                 return;
             }
             const posId = appState.currentPositionId;
-            
-            // Update history - remove the suggest action and replace with complete
-            // Find and remove the last suggest action for this position
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
-            // Add complete action to history
-            appState.history.push({
-                action: 'complete',
-                positionId: posId,
-                rating: appState.selectedRating
-            });
-            
+
+            // Clean up suggest from history, add complete
+            const idx = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
+            if (idx !== -1) appState.history.splice(idx, 1);
+
+            appState.history.push({ action: 'complete', positionId: posId, rating: appState.selectedRating });
             appState.completed.push(posId);
-            if (appState.selectedRating === 'like') {
-                appState.liked.push(posId);
-            } else if (appState.selectedRating === 'dislike') {
-                appState.disliked.push(posId);
-            } else if (appState.selectedRating === 'favorite') {
-                appState.favorited.push(posId);
-            }
-            
+
+            if (appState.selectedRating === 'like') appState.liked.push(posId);
+            else if (appState.selectedRating === 'dislike') appState.disliked.push(posId);
+            else if (appState.selectedRating === 'favorite') appState.favorited.push(posId);
+
+            const pos = positions.find(p => p.id === posId);
+            const emoji = appState.selectedRating === 'favorite' ? '❤️' : appState.selectedRating === 'like' ? '👍' : '👎';
+            toast(`${emoji} ${pos?.name || 'Position'} completed!`);
+
             appState.currentPositionId = null;
             appState.selectedRating = null;
             saveState();
@@ -938,72 +1141,55 @@
         function dontHaveEquipment() {
             const pos = positions.find(p => p.id === appState.currentPositionId);
             if (!pos) return;
-            
             const equipment = [...(pos.toys_used || []), ...(pos.restraints_used || [])];
             if (equipment.length === 0) {
-                alert('This position doesn\'t require any equipment!');
+                toast('This one doesn\'t need any equipment!');
                 return;
             }
-            
-            // Remove the suggest action from history since we're taking a different action
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === pos.id);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
-            appState.history.push({
-                action: 'missingEquipment',
-                positionId: pos.id,
-                equipment: equipment
-            });
-            
+
+            const idx = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === pos.id);
+            if (idx !== -1) appState.history.splice(idx, 1);
+
+            appState.history.push({ action: 'missingEquipment', positionId: pos.id, equipment });
+
             equipment.forEach(item => {
-                if (!appState.missingEquipment[item]) {
-                    appState.missingEquipment[item] = 0;
-                }
-                appState.missingEquipment[item]++;
+                appState.missingEquipment[item] = (appState.missingEquipment[item] || 0) + 1;
             });
-            
+
             appState.currentPositionId = null;
             saveState();
             updateEquipmentList();
             resetView();
-            setTimeout(() => suggestPosition(), 300);
+            toast('Equipment noted — finding another…');
+            setTimeout(() => suggestPosition(), 400);
         }
 
-        function dontWantToDo() {
-            if (!confirm('Are you sure you want to permanently remove this position?')) {
-                return;
-            }
-            const posId = appState.currentPositionId;
-            
-            // Remove the suggest action from history
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
-            appState.history.push({
-                action: 'remove',
-                positionId: posId
-            });
-            
-            appState.removed.push(posId);
-            appState.currentPositionId = null;
-            saveState();
-            updateStats();
-            resetView();
+        function showRemoveConfirm() {
+            const pos = positions.find(p => p.id === appState.currentPositionId);
+            showOverlay(
+                'Remove position?',
+                `"${pos?.name}" will be permanently removed from your pool.`,
+                'Remove',
+                'btn-danger',
+                () => {
+                    const posId = appState.currentPositionId;
+                    const idx = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
+                    if (idx !== -1) appState.history.splice(idx, 1);
+                    appState.history.push({ action: 'remove', positionId: posId });
+                    appState.removed.push(posId);
+                    appState.currentPositionId = null;
+                    saveState();
+                    updateStats();
+                    resetView();
+                    toast('Position removed');
+                }
+            );
         }
 
         function skipPosition() {
-            // Skip just hides the current position without any permanent action
-            // Remove the suggest action from history since we're skipping
             const posId = appState.currentPositionId;
-            const lastSuggestIndex = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
-            if (lastSuggestIndex !== -1) {
-                appState.history.splice(lastSuggestIndex, 1);
-            }
-            
+            const idx = appState.history.findLastIndex(h => h.action === 'suggest' && h.positionId === posId);
+            if (idx !== -1) appState.history.splice(idx, 1);
             appState.currentPositionId = null;
             appState.selectedRating = null;
             saveState();
@@ -1015,242 +1201,200 @@
             document.getElementById('positionView').classList.add('hidden');
         }
 
-        function updateStats() {
-            const total = positions.length;
-            const completed = appState.completed.length;
-            const percentage = Math.round((completed / total) * 100);
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressText').textContent = percentage + '%';
-            document.getElementById('completedCount').textContent = completed;
-            document.getElementById('favoritesCount').textContent = appState.favorited.length;
-            document.getElementById('likedCount').textContent = appState.liked.length;
-            document.getElementById('remainingCount').textContent = total - completed - appState.removed.length;
-        }
-
-        function updateEquipmentList() {
-            const container = document.getElementById('equipmentListContainer');
-            const equipment = Object.keys(appState.missingEquipment);
-            if (equipment.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">✅</div>
-                        <h3>All set!</h3>
-                        <p>No missing equipment yet</p>
-                    </div>
-                `;
+        // ==========================================
+        // UNDO
+        // ==========================================
+        function undoLastAction() {
+            if (appState.history.length === 0) {
+                toast('Nothing to undo');
                 return;
             }
-            container.innerHTML = equipment.map(item => `
-                <div class="equipment-item">
-                    <span class="equipment-name">${item}</span>
-                    <div>
-                        <span class="equipment-count">${appState.missingEquipment[item]} positions</span>
-                        <button class="btn btn-success btn-small" style="margin-left: 10px; width: auto; padding: 8px 15px;" onclick="markEquipmentAsOwned('${item}')">Got it!</button>
+            const last = appState.history.pop();
+
+            if (last.action === 'suggest') {
+                appState.currentPositionId = last.previousPositionId || null;
+                appState.selectedRating = null;
+                saveState();
+                if (appState.currentPositionId) {
+                    const pos = positions.find(p => p.id === appState.currentPositionId);
+                    if (pos) displayPosition(pos);
+                    else resetView();
+                } else resetView();
+            } else if (last.action === 'complete') {
+                appState.completed = appState.completed.filter(id => id !== last.positionId);
+                appState.liked = appState.liked.filter(id => id !== last.positionId);
+                appState.disliked = appState.disliked.filter(id => id !== last.positionId);
+                appState.favorited = appState.favorited.filter(id => id !== last.positionId);
+                appState.currentPositionId = last.positionId;
+                appState.selectedRating = null;
+                saveState();
+                updateStats();
+                const pos = positions.find(p => p.id === last.positionId);
+                if (pos) displayPosition(pos);
+            } else if (last.action === 'remove') {
+                appState.removed = appState.removed.filter(id => id !== last.positionId);
+                appState.currentPositionId = last.positionId;
+                appState.selectedRating = null;
+                saveState();
+                updateStats();
+                const pos = positions.find(p => p.id === last.positionId);
+                if (pos) displayPosition(pos);
+            } else if (last.action === 'missingEquipment') {
+                last.equipment.forEach(item => {
+                    if (appState.missingEquipment[item]) {
+                        appState.missingEquipment[item]--;
+                        if (appState.missingEquipment[item] <= 0) delete appState.missingEquipment[item];
+                    }
+                });
+                appState.currentPositionId = last.positionId;
+                appState.selectedRating = null;
+                saveState();
+                updateEquipmentList();
+                const pos = positions.find(p => p.id === last.positionId);
+                if (pos) displayPosition(pos);
+            }
+
+            toast('Undone ↩');
+        }
+
+        // ==========================================
+        // RESET
+        // ==========================================
+        function showResetConfirm() {
+            showOverlay(
+                'Reset everything?',
+                'All your progress, ratings, and history will be permanently erased. This cannot be undone.',
+                'Reset All',
+                'btn-danger',
+                () => {
+                    appState = {
+                        completed: [], liked: [], disliked: [], favorited: [],
+                        removed: [], missingEquipment: {}, currentPositionId: null,
+                        selectedRating: null, history: []
+                    };
+                    saveState();
+                    updateStats();
+                    updateEquipmentList();
+                    resetView();
+                    toast('All data reset');
+                }
+            );
+        }
+
+        // ==========================================
+        // EQUIPMENT TAB
+        // ==========================================
+        function updateEquipmentList() {
+            const container = document.getElementById('equipmentListContainer');
+            const items = Object.keys(appState.missingEquipment);
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="stats-card">
+                        <div class="empty-state">
+                            <div class="empty-icon">✓</div>
+                            <div class="empty-title">All clear</div>
+                            <div class="empty-sub">No missing equipment tracked</div>
+                        </div>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = items.map(item => `
+                <div class="equip-item">
+                    <span class="equip-name">${item}</span>
+                    <div class="equip-right">
+                        <span class="equip-count">${appState.missingEquipment[item]} pos.</span>
+                        <button class="equip-got-btn" onclick="markOwned('${item.replace(/'/g, "\\'")}')">Got it</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function markEquipmentAsOwned(equipment) {
-            delete appState.missingEquipment[equipment];
+        function markOwned(item) {
+            delete appState.missingEquipment[item];
             saveState();
             updateEquipmentList();
-            alert(`Great! Positions requiring "${equipment}" are now available.`);
+            toast(`"${item}" positions unlocked!`);
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            if (tab === 'positions') {
-                document.querySelector('.nav-btn:nth-child(1)').classList.add('active');
-                document.getElementById('positionsTab').classList.add('active');
-            } else if (tab === 'equipment') {
-                document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
-                document.getElementById('equipmentTab').classList.add('active');
-                updateEquipmentList();
-            } else if (tab === 'stats') {
-                document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
-                document.getElementById('statsTab').classList.add('active');
-                updateStatsTab();
-            }
-        }
-
+        // ==========================================
+        // STATS TAB
+        // ==========================================
         function updateStatsTab() {
-            document.getElementById('statsLikedCount').textContent = appState.liked.length;
-            document.getElementById('statsDislikedCount').textContent = appState.disliked.length;
-            document.getElementById('statsFavoritedCount').textContent = appState.favorited.length;
-            document.getElementById('statsRemovedCount').textContent = appState.removed.length;
+            document.getElementById('sLiked').textContent = appState.liked.length;
+            document.getElementById('sDisliked').textContent = appState.disliked.length;
+            document.getElementById('sFavorited').textContent = appState.favorited.length;
+            document.getElementById('sRemoved').textContent = appState.removed.length;
 
-            function renderPositionList(positionIds) {
-                if (positionIds.length === 0) {
-                    return `<div class="empty-state"><div class="empty-state-icon">📭</div><p style="color: #999;">None yet</p></div>`;
-                }
-                return positionIds.map(id => {
-                    const pos = positions.find(p => p.id === id);
-                    if (!pos) return '';
-                    let tags = '';
-                    if (pos.toy) tags += '<span class="tag toy">🎀 Toy</span>';
-                    if (pos.bondage) tags += '<span class="tag bondage">🔗 Bondage</span>';
-                    tags += `<span class="tag difficulty-${pos.difficulty}">${pos.difficulty}</span>`;
-                    return `
-                        <div class="position-list-item">
-                            <div class="position-list-name">${pos.name}</div>
-                            <div class="position-list-description">${pos.description}</div>
-                            <div class="position-list-tags">${tags}</div>
+            document.getElementById('favoritesList').innerHTML = renderPosList(appState.favorited, '#e8a0a0');
+            document.getElementById('likedList').innerHTML = renderPosList(appState.liked, 'var(--green)');
+            document.getElementById('dislikedList').innerHTML = renderPosList(appState.disliked, 'var(--rose)');
+        }
+
+        function renderPosList(ids, color) {
+            if (ids.length === 0) return '<div class="empty-sub" style="text-align:center;padding:16px;">None yet</div>';
+            return ids.map(id => {
+                const pos = positions.find(p => p.id === id);
+                if (!pos) return '';
+                let badges = `<span class="badge badge-${pos.difficulty}">${pos.difficulty}</span>`;
+                if (pos.toy) badges += '<span class="badge badge-toy">Toy</span>';
+                if (pos.bondage) badges += '<span class="badge badge-bondage">Bondage</span>';
+                return `
+                    <div class="pos-list-item" style="border-left-color:${color}">
+                        <div class="pos-list-name">${pos.name}</div>
+                        <div class="pos-list-desc">${pos.description}</div>
+                        <div class="pos-list-tags">${badges}</div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ==========================================
+        // UI HELPERS
+        // ==========================================
+        function updateStats() {
+            const total = positions.length;
+            const done = appState.completed.length;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('completedCount').textContent = done;
+            document.getElementById('favoritesCount').textContent = appState.favorited.length;
+            document.getElementById('likedCount').textContent = appState.liked.length;
+            document.getElementById('remainingCount').textContent = total - done - appState.removed.length;
+        }
+
+        function toast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), 2400);
+        }
+
+        function showOverlay(title, text, actionLabel, actionClass, onConfirm) {
+            const container = document.getElementById('overlayContainer');
+            container.innerHTML = `
+                <div class="overlay" onclick="if(event.target===this)closeOverlay()">
+                    <div class="overlay-card">
+                        <div class="overlay-title">${title}</div>
+                        <div class="overlay-text">${text}</div>
+                        <div class="overlay-actions">
+                            <button class="btn btn-ghost btn-sm" onclick="closeOverlay()">Cancel</button>
+                            <button class="btn ${actionClass} btn-sm" id="overlayConfirm">${actionLabel}</button>
                         </div>
-                    `;
-                }).join('');
-            }
-
-            document.getElementById('favoritesList').innerHTML = renderPositionList(appState.favorited);
-            document.getElementById('likedList').innerHTML = renderPositionList(appState.liked);
-            document.getElementById('dislikedList').innerHTML = renderPositionList(appState.disliked);
-        }
-
-        function undoLastAction() {
-            if (appState.history.length === 0) {
-                alert('Nothing to undo!');
-                return;
-            }
-            const lastAction = appState.history.pop();
-            
-            if (lastAction.action === 'suggest') {
-                // Undo a suggest - clear the current position and restore previous if any
-                appState.currentPositionId = lastAction.previousPositionId || null;
-                appState.selectedRating = null;
-                saveState();
-                
-                if (appState.currentPositionId) {
-                    // Restore the previous position
-                    const pos = positions.find(p => p.id === appState.currentPositionId);
-                    if (pos) {
-                        displayPosition(pos);
-                    } else {
-                        resetView();
-                    }
-                } else {
-                    resetView();
-                }
-            } else if (lastAction.action === 'complete') {
-                // Undo a complete - restore the position to suggested state
-                appState.completed = appState.completed.filter(id => id !== lastAction.positionId);
-                appState.liked = appState.liked.filter(id => id !== lastAction.positionId);
-                appState.disliked = appState.disliked.filter(id => id !== lastAction.positionId);
-                appState.favorited = appState.favorited.filter(id => id !== lastAction.positionId);
-                
-                // Restore the position as the current suggested position
-                appState.currentPositionId = lastAction.positionId;
-                appState.selectedRating = null;
-                saveState();
-                updateStats();
-                
-                // Display the position again
-                const pos = positions.find(p => p.id === lastAction.positionId);
-                if (pos) {
-                    displayPosition(pos);
-                }
-            } else if (lastAction.action === 'remove') {
-                // Undo a remove - restore position to suggested state
-                appState.removed = appState.removed.filter(id => id !== lastAction.positionId);
-                
-                // Restore as current position
-                appState.currentPositionId = lastAction.positionId;
-                appState.selectedRating = null;
-                saveState();
-                updateStats();
-                
-                const pos = positions.find(p => p.id === lastAction.positionId);
-                if (pos) {
-                    displayPosition(pos);
-                }
-            } else if (lastAction.action === 'missingEquipment') {
-                // Undo missing equipment - decrement counts and restore position
-                lastAction.equipment.forEach(item => {
-                    if (appState.missingEquipment[item]) {
-                        appState.missingEquipment[item]--;
-                        if (appState.missingEquipment[item] <= 0) {
-                            delete appState.missingEquipment[item];
-                        }
-                    }
-                });
-                
-                // Restore as current position
-                appState.currentPositionId = lastAction.positionId;
-                appState.selectedRating = null;
-                saveState();
-                updateEquipmentList();
-                
-                const pos = positions.find(p => p.id === lastAction.positionId);
-                if (pos) {
-                    displayPosition(pos);
-                }
-            }
-            
-            alert('Last action undone!');
-        }
-
-        function confirmReset() {
-            if (confirm('Are you sure you want to reset ALL data? This cannot be undone!')) {
-                if (confirm('Really sure? All your progress will be lost!')) {
-                    resetAll();
-                }
-            }
-        }
-
-        function resetAll() {
-            appState = {
-                completed: [],
-                liked: [],
-                disliked: [],
-                favorited: [],
-                removed: [],
-                missingEquipment: {},
-                currentPositionId: null,
-                selectedRating: null,
-                history: []
+                    </div>
+                </div>`;
+            document.getElementById('overlayConfirm').onclick = () => {
+                closeOverlay();
+                onConfirm();
             };
-            saveState();
-            updateStats();
-            updateEquipmentList();
-            resetView();
-            alert('All data has been reset!');
         }
 
-        async function manualSync() {
-            if (!syncEnabled) {
-                alert('Cloud sync is not configured. Using local storage only.');
-                return;
-            }
-            
-            if (!userCode) {
-                const hasCode = await promptForCode();
-                if (!hasCode) return;
-            }
-            
-            try {
-                // Upload local data
-                await syncToCloud();
-                // Then pull any updates
-                await syncFromCloud();
-                // Restore current position after sync
-                restoreCurrentPosition();
-                alert('Sync completed successfully!');
-            } catch (error) {
-                alert('Sync failed. Please try again.');
-                console.error(error);
-            }
+        function closeOverlay() {
+            document.getElementById('overlayContainer').innerHTML = '';
         }
 
-        function changeCode() {
-            const newCode = prompt('Enter new shared code:', userCode || '');
-            if (newCode && newCode.trim()) {
-                userCode = newCode.trim();
-                localStorage.setItem('userCode', userCode);
-                syncFromCloud();
-            }
-        }
-
-        loadPositions();
+        // ==========================================
+        // BOOT
+        // ==========================================
+        init();
     </script>
 </body>
 </html>
