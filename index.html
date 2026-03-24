@@ -113,31 +113,33 @@
         }
 
         .progress-bar-container {
-            height: 6px;
+            height: 28px;
             background: var(--bg-surface);
-            border-radius: 3px;
+            border-radius: 14px;
             overflow: hidden;
             margin-bottom: 16px;
+            position: relative;
         }
 
         .progress-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--accent), #e8c47a);
-            border-radius: 3px;
+            border-radius: 14px;
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
         }
 
-        .progress-bar-fill::after {
-            content: '';
+        .progress-bar-text {
             position: absolute;
-            right: 0;
-            top: -1px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #e8c47a;
-            box-shadow: 0 0 12px var(--accent-glow);
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--text-primary);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            z-index: 1;
         }
 
         .stats-grid {
@@ -676,6 +678,7 @@
         <div class="progress-section">
             <div class="progress-bar-container">
                 <div class="progress-bar-fill" id="progressFill" style="width: 0%"></div>
+                <div class="progress-bar-text" id="progressText">0%</div>
             </div>
             <div class="stats-grid">
                 <div class="stat-item">
@@ -717,8 +720,8 @@
                 <div class="position-card">
                     <div class="empty-state">
                         <div class="empty-icon">✦</div>
-                        <div class="empty-title">What's our next position??</div>
-                        <div class="empty-sub">You're hot</div>
+                        <div class="empty-title">Ready to explore?</div>
+                        <div class="empty-sub">Tap below to get a suggestion</div>
                     </div>
                 </div>
                 <button class="btn btn-accent" onclick="suggestPosition()">Suggest a Position</button>
@@ -750,7 +753,7 @@
                         <div class="rating-title">How was it?</div>
                         <div class="rating-buttons">
                             <button class="rating-btn" data-rating="dislike" onclick="selectRating('dislike')">
-                                👎<span>Booo</span>
+                                👎<span>Nah</span>
                             </button>
                             <button class="rating-btn" data-rating="like" onclick="selectRating('like')">
                                 👍<span>Good</span>
@@ -1355,6 +1358,7 @@
             const done = appState.completed.length;
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
             document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressText').textContent = pct + '%';
             document.getElementById('completedCount').textContent = done;
             document.getElementById('favoritesCount').textContent = appState.favorited.length;
             document.getElementById('likedCount').textContent = appState.liked.length;
